@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 ROYALCAST_API = "https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel"
-ROYALCAST_LANDING = "https://channel.royalcast.com/landingpage/gemeentetexel"
+ROYALCAST_LANDING = "https://channel.royalcast.com/landingpage/texel/gemeentetexel"
 SEEN_FILE = Path("docs/seen.json")
 FEED_FILE = Path("docs/feed.xml")
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
