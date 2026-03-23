@@ -62,7 +62,7 @@ def save_seen(seen):
 
 
 def download_audio(date_id):
-    url = f"https://sdk.companywebcast.com/players/727d609c-cd68-49db-b4af-ee8170f2d21f/stream/hls"
+    url = f"http://player.companywebcast.com/gemeentetexel/{date_id}/nl/resource/download/wmv/bb/gemeente texel webcasts-{date_id}.wmv"
     output = f"audio/{date_id}_raw.mp3"
     Path("audio").mkdir(exist_ok=True)
     log(f"Downloaden: {url}")
