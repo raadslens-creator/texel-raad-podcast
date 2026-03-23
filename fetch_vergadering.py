@@ -62,7 +62,7 @@ def save_seen(seen):
 
 
 def download_audio(date_id):
-    """Download MP3 direct van S3 via de RoyalCast API."""
+    """Download audio via directe MP3 link uit de API."""
     api_url = f"https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel/{date_id}?method=GET&key="
     log(f"API ophalen: {api_url}")
     try:
@@ -75,43 +75,44 @@ def download_audio(date_id):
 
     # Zoek MP3 in attachments
     mp3_url = None
-    for attachment in data.get("attachments", []):
-        if attachment.get("contentType") == "audio/mpeg":
-            mp3_url = attachment.get("location")
+    mp4_url = None
+    for att in data.get("attachments", []):
+        ct = att.get("contentType", "")
+        loc = att.get("location", "")
+        if "audio/mpeg" in ct or loc.endswith(".mp3"):
+            mp3_url = loc
+            log(f"MP3 gevonden: {loc[:80]}...")
             break
+        if "video/mp4" in ct or loc.endswith(".mp4"):
+            mp4_url = loc
 
-    # Fallback: zoek MP4
-    if not mp3_url:
-        for attachment in data.get("attachments", []):
-            if attachment.get("contentType") == "video/mp4":
-                mp3_url = attachment.get("location")
-                break
-
-    if not mp3_url:
-        log("Geen MP3 of MP4 gevonden in API-response")
+    download_url = mp3_url or mp4_url
+    if not download_url:
+        log("Geen MP3 of MP4 gevonden - vergadering mogelijk nog niet verwerkt")
         return None
 
-    log(f"Download URL gevonden: {mp3_url[:80]}...")
     output = f"audio/{date_id}_raw.mp3"
     Path("audio").mkdir(exist_ok=True)
+    log(f"Downloaden: {download_url[:80]}...")
 
     cmd = [
         "yt-dlp",
+        "--extract-audio", "--audio-format", "mp3",
+        "--audio-quality", "64K",
         "--output", output,
         "--no-playlist",
-        "--socket-timeout", "60",
-        "--retries", "5",
-        mp3_url,
+        download_url,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         log(f"yt-dlp fout:\n{result.stderr[-500:]}")
-        # Probeer met wget als fallback
-        log("Fallback: direct downloaden...")
+        # Fallback: wget
+        log("Fallback: directe download proberen...")
         try:
-            req = urllib.request.Request(mp3_url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=300) as resp:
-                Path(output).write_bytes(resp.read())
+            req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                with open(output, "wb") as f:
+                    f.write(resp.read())
         except Exception as e:
             log(f"Download fout: {e}")
             return None
@@ -119,10 +120,8 @@ def download_audio(date_id):
     if not Path(output).exists():
         log("Bestand niet gevonden")
         return None
-
     log(f"Download OK ({Path(output).stat().st_size / 1024 / 1024:.1f} MB)")
     return output
-
 
 def remove_silences(input_file, output_file):
     log("Stiltedetectie...")
