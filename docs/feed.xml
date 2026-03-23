@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+<channel>
+  <title>Gemeenteraad Texel</title>
+  <description>Raadsvergaderingen van de gemeente Texel</description>
+  <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
+  <language>nl</language>
+  <itunes:author>Gemeente Texel</itunes:author>
+  <itunes:category text="Government"/>
+  <itunes:explicit>false</itunes:explicit>
+</channel>
+</rss>
