@@ -4,8 +4,6 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 CHANNEL = "gemeentetexel"
-ROYALCAST_LANDING = "https://channel.royalcast.com/landingpage/texel"
-ROYALCAST_CHECK = "https://channel.royalcast.com/texel/#!/gemeentetexel"
 SEEN_FILE = Path("docs/seen.json")
 FEED_FILE = Path("docs/feed.xml")
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
@@ -13,35 +11,13 @@ GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 SILENCE_THRESHOLD_DB = "-35dB"
 SILENCE_MIN_DURATION = 45
 
+
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
-def fetch_text(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", errors="replace")
-
-def check_webcast_exists(webcast_id):
-    """Controleer of een webcast beschikbaar is door de landingspagina op te halen."""
-    url = f"{ROYALCAST_LANDING}/{webcast_id}/"
-    log(f"Controleren: {url}")
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            html = resp.read().decode("utf-8", errors="replace")
-            # Controleer of er een video op de pagina staat
-            if "royalcast" in html.lower() or "video" in html.lower() or "webcast" in html.lower():
-                log(f"Gevonden: {webcast_id}")
-                return True
-    except Exception as e:
-        log(f"Niet beschikbaar: {e}")
-    return False
 
 def get_recent_webcast_ids():
-    """
-    Genereer mogelijke webcast IDs voor de afgelopen 14 dagen.
-    Patroon: gemeentetexel/YYYYMMDD_1 (soms ook _2 voor dubbele vergaderingen)
-    """
+    """Genereer mogelijke webcast IDs voor de afgelopen 14 dagen."""
     ids = []
     today = datetime.now(timezone.utc)
     for days_ago in range(0, 14):
@@ -51,25 +27,52 @@ def get_recent_webcast_ids():
             ids.append(f"{CHANNEL}/{date_str}_{n}")
     return ids
 
+
+def check_webcast_exists(webcast_id):
+    """Controleer of yt-dlp de webcast kan vinden."""
+    url = f"https://channel.royalcast.com/texel/#!/{webcast_id}"
+    log(f"Controleren: {url}")
+    try:
+        result = subprocess.run(
+            ["yt-dlp", "--simulate", "--no-warnings", url],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode == 0:
+            log(f"Gevonden!")
+            return True
+        else:
+            log(f"Niet beschikbaar")
+            return False
+    except Exception as e:
+        log(f"Fout: {e}")
+        return False
+
+
 def load_seen():
     if SEEN_FILE.exists():
         return json.loads(SEEN_FILE.read_text())
     return []
 
+
 def save_seen(seen):
     SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
     SEEN_FILE.write_text(json.dumps(seen, indent=2))
 
-def download_audio(webcast_id, title):
-    url = f"{ROYALCAST_LANDING}/{webcast_id}/"
+
+def download_audio(webcast_id):
+    url = f"https://channel.royalcast.com/texel/#!/{webcast_id}"
     safe_id = webcast_id.replace("/", "_")
     output = f"audio/{safe_id}_raw.mp3"
     Path("audio").mkdir(exist_ok=True)
     log(f"Downloaden: {url}")
     cmd = [
-        "yt-dlp", "--extract-audio", "--audio-format", "mp3",
-        "--audio-quality", "64K", "--output", output,
-        "--no-playlist", "--socket-timeout", "60", "--retries", "5",
+        "yt-dlp",
+        "--extract-audio", "--audio-format", "mp3",
+        "--audio-quality", "64K",
+        "--output", output,
+        "--no-playlist",
+        "--socket-timeout", "60",
+        "--retries", "5",
         url,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -77,10 +80,11 @@ def download_audio(webcast_id, title):
         log(f"yt-dlp fout:\n{result.stderr[-500:]}")
         return None
     if not Path(output).exists():
-        log("Bestand niet gevonden")
+        log("Bestand niet gevonden na download")
         return None
     log(f"Download OK ({Path(output).stat().st_size / 1024 / 1024:.1f} MB)")
     return output
+
 
 def remove_silences(input_file, output_file):
     log("Stiltedetectie...")
@@ -101,7 +105,7 @@ def remove_silences(input_file, output_file):
         log("Geen schorsingen gevonden")
         shutil.copy(input_file, output_file)
         return []
-    log(f"{len(silences)} schorsingen, totaal {sum(d for _,_,d in silences):.0f}s")
+    log(f"{len(silences)} schorsingen, totaal {sum(d for _,_,d in silences):.0f}s verwijderd")
     KEEP_PAUSE = 1.0
     segments = []
     prev_end = 0.0
@@ -128,49 +132,16 @@ def remove_silences(input_file, output_file):
     log("Audio knippen...")
     result = subprocess.run(cut_cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        log(f"Knippen mislukt")
+        log(f"Knippen mislukt - origineel gebruiken")
         shutil.copy(input_file, output_file)
         return []
     log(f"Geknipt: {Path(output_file).stat().st_size / 1024 / 1024:.1f} MB")
     return silences
 
-def add_chapters_to_mp3(audio_file, chapters):
-    if not chapters:
-        return
-    try:
-        from mutagen.mp3 import MP3
-        from mutagen.id3 import ID3, CHAP, TIT2, CTOC, CTOCFlags
-    except ImportError:
-        return
-    audio = MP3(audio_file)
-    total_ms = int(audio.info.length * 1000)
-    try:
-        tags = ID3(audio_file)
-    except Exception:
-        tags = ID3()
-    tags.delall("CHAP")
-    tags.delall("CTOC")
-    chapter_ids = []
-    for i, ch in enumerate(chapters):
-        start_ms = ch["start_sec"] * 1000
-        end_ms = chapters[i + 1]["start_sec"] * 1000 if i + 1 < len(chapters) else total_ms
-        cid = f"chp{i}"
-        chapter_ids.append(cid)
-        tags.add(CHAP(
-            element_id=cid, start_time=start_ms, end_time=end_ms,
-            start_offset=0xFFFFFFFF, end_offset=0xFFFFFFFF,
-            sub_frames=[TIT2(encoding=3, text=ch["titel"])],
-        ))
-    tags.add(CTOC(
-        element_id="toc", flags=CTOCFlags.TOP_LEVEL | CTOCFlags.ORDERED,
-        child_element_ids=chapter_ids,
-        sub_frames=[TIT2(encoding=3, text="Inhoudsopgave")],
-    ))
-    tags.save(audio_file)
-    log("Hoofdstukken opgeslagen")
 
 def create_github_release(webcast_id, title, date_str, audio_file):
     if not GITHUB_TOKEN or not REPO:
+        log("Geen GitHub token/repo")
         return None
     safe_id = webcast_id.replace("/", "-")
     headers = {
@@ -191,7 +162,7 @@ def create_github_release(webcast_id, title, date_str, audio_file):
     with urllib.request.urlopen(req) as resp:
         release = json.loads(resp.read())
     upload_url = release["upload_url"].replace("{?name,label}", "")
-    log(f"Release: {release['html_url']}")
+    log(f"Release aangemaakt: {release['html_url']}")
     upload_headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -207,6 +178,7 @@ def create_github_release(webcast_id, title, date_str, audio_file):
         asset = json.loads(resp.read())
     log(f"MP3 geüpload: {asset['browser_download_url']}")
     return asset["browser_download_url"]
+
 
 def load_episodes():
     episodes = []
@@ -225,6 +197,7 @@ def load_episodes():
                 "pub_date": pub.group(1) if pub else "",
             })
     return episodes
+
 
 def update_rss_feed(episodes):
     FEED_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -252,6 +225,7 @@ def update_rss_feed(episodes):
 </channel>
 </rss>""".strip())
     log(f"RSS bijgewerkt: {len(episodes)} afleveringen")
+
 
 def main():
     log("=== Texel Raadsvergadering Podcast ===")
@@ -282,7 +256,7 @@ def main():
         full_title = f"Raadsvergadering Texel - {date_str}"
         log(f"Verwerken: {full_title}")
 
-        raw_audio = download_audio(wc_id, full_title)
+        raw_audio = download_audio(wc_id)
         if not raw_audio:
             seen.append(wc_id)
             save_seen(seen)
@@ -318,6 +292,7 @@ def main():
 
     if not new_found:
         log("Geen nieuwe vergaderingen gevonden")
+
 
 if __name__ == "__main__":
     main()
