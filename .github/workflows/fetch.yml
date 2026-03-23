@@ -28,7 +28,7 @@ jobs:
       - name: yt-dlp en ffmpeg installeren
         run: |
           pip install yt-dlp
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg --fix-missing || sudo apt-get install -y ffmpeg
 
       - name: Vergadering ophalen
         env:
