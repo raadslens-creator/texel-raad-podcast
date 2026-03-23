@@ -1,0 +1,45 @@
+name: Fetch Raadsvergadering
+
+on:
+  schedule:
+    # Elke donderdag om 01:00 UTC (= 03:00 Nederlandse tijd)
+    # Vergadering is op woensdagavond, opname staat dan al klaar
+    - cron: "0 1 * * 4"
+  workflow_dispatch:
+    # Handmatig starten via GitHub Actions UI
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Python instellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: yt-dlp en ffmpeg installeren
+        run: |
+          pip install yt-dlp
+          sudo apt-get install -y ffmpeg
+
+      - name: Vergadering ophalen
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python fetch_vergadering.py
+
+      - name: RSS-feed committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/feed.xml docs/seen.json || true
+          git diff --staged --quiet || git commit -m "RSS-feed bijgewerkt [skip ci]"
+          git push
