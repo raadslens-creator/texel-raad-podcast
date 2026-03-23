@@ -2,11 +2,8 @@ name: Fetch Raadsvergadering
 
 on:
   schedule:
-    # Elke donderdag om 01:00 UTC (= 03:00 Nederlandse tijd)
-    # Vergadering is op woensdagavond, opname staat dan al klaar
     - cron: "0 1 * * 4"
   workflow_dispatch:
-    # Handmatig starten via GitHub Actions UI
 
 jobs:
   fetch:
@@ -25,7 +22,7 @@ jobs:
         with:
           python-version: "3.11"
 
-- name: yt-dlp en ffmpeg installeren
+      - name: yt-dlp en ffmpeg installeren
         run: |
           pip install yt-dlp
           sudo apt-get update -o Acquire::Retries=3
