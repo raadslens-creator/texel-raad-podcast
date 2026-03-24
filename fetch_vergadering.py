@@ -10,6 +10,7 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 SILENCE_THRESHOLD_DB = "-35dB"
 SILENCE_MIN_DURATION = 45
+LOGO_URL = "https://raadslens-creator.github.io/texel-raad-podcast/logo.png"
 
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
@@ -26,7 +27,7 @@ def get_recent_webcast_ids():
     """Genereer mogelijke webcast IDs voor de afgelopen 14 dagen."""
     ids = []
     today = datetime.now(timezone.utc)
-    for days_ago in range(0, 45):
+    for days_ago in range(0, 14):
         date = today - timedelta(days=days_ago)
         date_str = date.strftime("%Y%m%d")
         for n in [1, 2, 3]:
@@ -177,14 +178,12 @@ def build_shownotes(data, date_str):
     """Bouw shownotes op uit agendapunten."""
     topics = data.get("topics", [])
     if not topics:
-        return f"Raadsvergadering gemeente Texel, {date_str}."
-
-    regels = [f"Raadsvergadering gemeente Texel\n{date_str}\n\nAgenda:"]
+        return f"Vergadering gemeente Texel, {date_str}."
+    regels = [f"Vergadering gemeente Texel\n{date_str}\n\nAgenda:"]
     for t in topics:
         titel = t.get("title", "").strip()
         if titel:
             regels.append(f"• {titel}")
-
     return "\n".join(regels)
 
 
@@ -200,7 +199,7 @@ def create_github_release(date_id, title, date_str, audio_file):
     release_data = json.dumps({
         "tag_name": f"vergadering-{date_id}",
         "name": title,
-        "body": f"Raadsvergadering Texel - {date_str}",
+        "body": f"Vergadering Texel - {date_str}",
         "draft": False, "prerelease": False,
     }).encode()
     req = urllib.request.Request(
@@ -266,7 +265,6 @@ def update_rss_feed(episodes):
     FEED_FILE.parent.mkdir(parents=True, exist_ok=True)
     items = ""
     for ep in episodes:
-        desc = ep.get("description", ep["title"]).replace("&", "&amp;")
         items += f"""
   <item>
     <title>{ep['title']}</title>
@@ -275,22 +273,23 @@ def update_rss_feed(episodes):
     <enclosure url="{ep['audio_url']}" type="audio/mpeg" length="{ep.get('size', 0)}"/>
     <guid isPermaLink="false">{ep['id']}</guid>
     <itunes:duration>{ep.get('duration', '')}</itunes:duration>
+    <itunes:image href="{LOGO_URL}"/>
   </item>"""
     FEED_FILE.write_text(f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
-  <title>Gemeenteraad Texel</title>
-  <description>Raadsvergaderingen van de gemeente Texel</description>
+  <title>Raadslens Texel</title>
+  <description>Vergaderingen van de gemeente Texel - automatisch als podcast</description>
   <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
-  <itunes:author>Gemeente Texel</itunes:author>
-  <itunes:category text="Government"/>
-  <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
+  <itunes:author>Raadslens</itunes:author>
+  <itunes:image href="{LOGO_URL}"/>
   <image>
-    <url>https://raadslens-creator.github.io/texel-raad-podcast/logo.png</url>
-    <title>Gemeenteraad Texel</title>
+    <url>{LOGO_URL}</url>
+    <title>Raadslens Texel</title>
     <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
   </image>
+  <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>{items}
 </channel>
 </rss>""".strip())
@@ -298,7 +297,7 @@ def update_rss_feed(episodes):
 
 
 def main():
-    log("=== Texel Raadsvergadering Podcast ===")
+    log("=== Raadslens Texel ===")
     subprocess.run(["pip", "install", "mutagen", "-q"], check=False)
 
     seen = load_seen()
@@ -324,8 +323,12 @@ def main():
         except Exception:
             date_str = "onbekend"
             pub_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+            dt = datetime.now(timezone.utc)
 
-        full_title = f"Raadsvergadering Texel - {date_str}"
+        # Titel: type + datum in formaat DD-MM-YYYY
+        vergadering_type = data.get("title", "Vergadering")
+        full_title = f"{vergadering_type} {dt.day:02d}-{dt.month:02d}-{dt.year}"
+
         log(f"Verwerken: {full_title}")
 
         # Shownotes
