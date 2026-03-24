@@ -201,6 +201,8 @@ def transcribe_audio(audio_file):
 
 def format_timestamp(sec):
     """Formatteer seconden naar HH:MM:SS."""
+    if sec is None:
+        return "00:00:00"
     h = int(sec // 3600)
     m = int((sec % 3600) // 60)
     s = int(sec % 60)
