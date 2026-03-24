@@ -270,6 +270,12 @@ def update_rss_feed(episodes):
   <language>nl</language>
   <itunes:author>Gemeente Texel</itunes:author>
   <itunes:category text="Government"/>
+  <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
+  <image>
+    <url>https://raadslens-creator.github.io/texel-raad-podcast/logo.png</url>
+    <title>Gemeenteraad Texel</title>
+    <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
+  </image>
   <itunes:explicit>false</itunes:explicit>{items}
 </channel>
 </rss>""".strip())
