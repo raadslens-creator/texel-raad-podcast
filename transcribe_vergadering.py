@@ -415,7 +415,7 @@ def build_transcript(segments, speakers, data, date_str):
         speaker = find_speaker_at(seg["start"], speakers) if speakers else None
         text = seg["text"]
 
-        if speaker != current_speaker:
+        if speaker != current_speaker or (speaker is None and len(current_block) > 20):
             if current_block and current_start is not None:
                 ts = format_timestamp(current_start)
                 label = f" {current_speaker.upper()}" if current_speaker else ""
