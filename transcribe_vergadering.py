@@ -539,13 +539,9 @@ def main():
     silences = detect_silences(audio_file)
     log(f"{len(silences)} schorsingen gevonden")
 
-    # Sprekerdata ophalen en corrigeren
-    if raw_speakers:
-        # Tijdelijk zonder correctie - direct relatief aan actualStart
-        speakers = raw_speakers
-        log(f"Sprekers zonder tijdcorrectie")
-    else:
-        speakers = []
+    # Sprekerdata ophalen - zonder tijdcorrectie
+    raw_speakers = get_speaker_timeline(data)
+    speakers = raw_speakers  # Direct gebruiken, geen correctie
 
     # Transcriberen
     segments = transcribe_audio(audio_file, vocabulary)
