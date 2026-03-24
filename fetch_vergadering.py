@@ -23,6 +23,16 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def parse_royalcast_timestamp(ts_str):
+    """Zet /Date(1771437970000)/ om naar seconden."""
+    if not ts_str:
+        return None
+    match = re.search(r"\d+", ts_str)
+    if match:
+        return int(match.group()) / 1000
+    return None
+
+
 def get_recent_webcast_ids():
     """Genereer mogelijke webcast IDs voor de afgelopen 14 dagen."""
     ids = []
@@ -59,6 +69,65 @@ def check_and_fetch_webcast(date_id):
         return None
 
 
+def get_intro_duration(data):
+    """
+    Bereken hoe lang het intro is dat weggeknipt moet worden.
+    = tijd tussen actualStart en het eerste spreekmoment in topics.
+    """
+    actual_start = parse_royalcast_timestamp(data.get("actualStart"))
+    if not actual_start:
+        log("Geen actualStart gevonden - intro niet wegknippen")
+        return 0
+
+    # Zoek het vroegste event in alle topics
+    earliest_event = None
+    for topic in data.get("topics", []):
+        for event in topic.get("events", []):
+            event_start = parse_royalcast_timestamp(event.get("start"))
+            if event_start and (earliest_event is None or event_start < earliest_event):
+                earliest_event = event_start
+
+    if not earliest_event:
+        log("Geen topic-events gevonden - intro niet wegknippen")
+        return 0
+
+    intro_sec = max(0, earliest_event - actual_start)
+    log(f"Intro: {intro_sec:.0f}s (actualStart tot eerste spreker)")
+    return intro_sec
+
+
+def get_chapter_times(data, actual_start_sec):
+    """
+    Haal hoofdstuk-tijdstempels op uit de topics array.
+    Geeft lijst van {titel, start_sec} terug, relatief aan actualStart.
+    """
+    chapters = []
+    for topic in data.get("topics", []):
+        titel = topic.get("title", "").strip()
+        if not titel:
+            continue
+
+        events = topic.get("events", [])
+        if events:
+            # Gebruik de starttijd van het eerste event
+            event_start = parse_royalcast_timestamp(events[0].get("start"))
+            if event_start and actual_start_sec:
+                start_sec = max(0, event_start - actual_start_sec)
+            else:
+                start_sec = 0
+        else:
+            # Geen event-tijden - gebruik vorig hoofdstuk + schatting
+            start_sec = chapters[-1]["start_sec"] + 60 if chapters else 0
+
+        chapters.append({
+            "titel": titel[:80],
+            "start_sec": start_sec,
+        })
+
+    log(f"{len(chapters)} hoofdstukken gevonden")
+    return chapters
+
+
 def load_seen():
     if SEEN_FILE.exists():
         return json.loads(SEEN_FILE.read_text())
@@ -93,7 +162,6 @@ def download_audio(date_id, data):
     Path("audio").mkdir(exist_ok=True)
     log(f"Downloaden...")
 
-    # Probeer eerst yt-dlp
     cmd = [
         "yt-dlp",
         "--extract-audio", "--audio-format", "mp3",
@@ -121,7 +189,29 @@ def download_audio(date_id, data):
     return output
 
 
+def trim_intro(input_file, output_file, intro_sec):
+    """Knip het intro weg vanaf het begin van de audio."""
+    if intro_sec <= 0:
+        shutil.copy(input_file, output_file)
+        return
+    log(f"Intro wegknippen: eerste {intro_sec:.0f}s verwijderen...")
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", input_file,
+        "-ss", str(intro_sec),
+        "-acodec", "copy",
+        output_file,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        log(f"Intro knippen mislukt - origineel gebruiken")
+        shutil.copy(input_file, output_file)
+    else:
+        log(f"Intro weggeknipt")
+
+
 def remove_silences(input_file, output_file):
+    """Verwijder lange stiltes (schorsingen) uit de audio."""
     log("Stiltedetectie...")
     detect_cmd = [
         "ffmpeg", "-i", input_file,
@@ -172,6 +262,86 @@ def remove_silences(input_file, output_file):
         return []
     log(f"Geknipt: {Path(output_file).stat().st_size / 1024 / 1024:.1f} MB")
     return silences
+
+
+def correct_chapter_times(chapters, intro_sec, silences):
+    """
+    Corrigeer hoofdstuktijden voor:
+    1. Weggeknipt intro
+    2. Verwijderde schorsingen
+    """
+    corrected = []
+    for ch in chapters:
+        t = ch["start_sec"]
+
+        # Corrigeer voor intro
+        t = max(0, t - intro_sec)
+
+        # Corrigeer voor verwijderde schorsingen
+        removed = sum(
+            min(end, t) - start
+            for start, end, _ in silences
+            if start < t
+        )
+        t = max(0, t - removed)
+
+        corrected.append({**ch, "start_sec": t})
+
+    return corrected
+
+
+def add_chapters_to_mp3(audio_file, chapters):
+    """Voeg hoofdstukken toe als ID3 CHAP-tags via mutagen."""
+    if not chapters:
+        log("Geen hoofdstukken om toe te voegen")
+        return
+    try:
+        from mutagen.mp3 import MP3
+        from mutagen.id3 import ID3, CHAP, TIT2, CTOC, CTOCFlags
+    except ImportError:
+        log("mutagen niet gevonden - hoofdstukken overgeslagen")
+        return
+
+    log(f"Hoofdstukken toevoegen ({len(chapters)} stuks)...")
+    audio = MP3(audio_file)
+    total_ms = int(audio.info.length * 1000)
+
+    try:
+        tags = ID3(audio_file)
+    except Exception:
+        tags = ID3()
+
+    tags.delall("CHAP")
+    tags.delall("CTOC")
+
+    chapter_ids = []
+    for i, ch in enumerate(chapters):
+        start_ms = int(ch["start_sec"] * 1000)
+        end_ms = (
+            int(chapters[i + 1]["start_sec"] * 1000)
+            if i + 1 < len(chapters)
+            else total_ms
+        )
+        cid = f"chp{i}"
+        chapter_ids.append(cid)
+        tags.add(CHAP(
+            element_id=cid,
+            start_time=start_ms,
+            end_time=end_ms,
+            start_offset=0xFFFFFFFF,
+            end_offset=0xFFFFFFFF,
+            sub_frames=[TIT2(encoding=3, text=ch["titel"])],
+        ))
+
+    tags.add(CTOC(
+        element_id="toc",
+        flags=CTOCFlags.TOP_LEVEL | CTOCFlags.ORDERED,
+        child_element_ids=chapter_ids,
+        sub_frames=[TIT2(encoding=3, text="Inhoudsopgave")],
+    ))
+
+    tags.save(audio_file)
+    log("Hoofdstukken opgeslagen")
 
 
 def build_shownotes(data, date_str):
@@ -325,15 +495,23 @@ def main():
             pub_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
             dt = datetime.now(timezone.utc)
 
-        # Titel: type + datum in formaat DD-MM-YYYY
+        # Titel: type + datum DD-MM-YYYY
         vergadering_type = data.get("title", "Vergadering")
         full_title = f"{vergadering_type} {dt.day:02d}-{dt.month:02d}-{dt.year}"
-
         log(f"Verwerken: {full_title}")
 
         # Shownotes
         description = build_shownotes(data, date_str)
         log(f"Shownotes: {len(data.get('topics', []))} agendapunten")
+
+        # Intro-duur bepalen
+        intro_sec = get_intro_duration(data)
+
+        # actualStart voor hoofdstuk-tijdberekening
+        actual_start_sec = parse_royalcast_timestamp(data.get("actualStart"))
+
+        # Hoofdstukken uit API
+        chapters = get_chapter_times(data, actual_start_sec)
 
         # Download
         raw_audio = download_audio(date_id, data)
@@ -342,9 +520,18 @@ def main():
             save_seen(seen)
             continue
 
-        # Stiltes verwijderen
+        # Stap 1: intro wegknippen
+        trimmed_audio = f"audio/{date_id}_trimmed.mp3"
+        trim_intro(raw_audio, trimmed_audio, intro_sec)
+
+        # Stap 2: schorsingen verwijderen
         processed = f"audio/{date_id}.mp3"
-        remove_silences(raw_audio, processed)
+        silences = remove_silences(trimmed_audio, processed)
+
+        # Hoofdstuktijden corrigeren voor intro + schorsingen
+        if chapters:
+            chapters = correct_chapter_times(chapters, intro_sec, silences)
+            add_chapters_to_mp3(processed, chapters)
 
         # Duur bepalen
         try:
@@ -361,6 +548,18 @@ def main():
 
         # RSS bijwerken
         episodes = load_episodes()
+
+        # Shownotes uitbreiden met hoofdstukken
+        if chapters:
+            hoofdstuk_regels = ["\n\nHoofdstukken:"]
+            for ch in chapters:
+                h = int(ch["start_sec"] // 3600)
+                m = int((ch["start_sec"] % 3600) // 60)
+            s = int(ch["start_sec"] % 60)
+            ts = f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+            hoofdstuk_regels.append(f"• {ts} {ch['titel']}")
+            description += "\n".join(hoofdstuk_regels)
+
         episodes.insert(0, {
             "id": date_id,
             "title": full_title,
