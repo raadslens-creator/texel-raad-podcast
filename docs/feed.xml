@@ -2,10 +2,11 @@
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
   <title>Raadslens Texel</title>
-  <description>Vergaderingen van de gemeente Texel - automatisch als podcast</description>
+  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten.</description>
   <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
   <itunes:author>Raadslens</itunes:author>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten.</itunes:summary>
   <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
   <image>
     <url>https://raadslens-creator.github.io/texel-raad-podcast/logo.png</url>
@@ -15,33 +16,38 @@
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
   <item>
-    <title>Raadsvergadering 18-02-2026</title>
+    <title>Raadsvergadering 23-03-2026</title>
     <description><![CDATA[Vergadering gemeente Texel
-18 februari 2026
+23 maart 2026
 
 Agenda:
 • 1 Opening en mededelingen
 • 2 Vaststelling agenda
-• 3 Rondvraag
-• 4 BESPREEKSTUK - Sloop voormalige karthal De Koog (II)
-• 5 BESPREEKSTUK - Zienswijze Kadernota 2027 Omgevingsdienst NHN
-• 6 Motie D66, PvdA pro Texel en GroenLinks: Een registratietermijn van 6 maanden bij schuldenregelingen
-• 7 Motie PvdA pro Texel, VVD Texel, Hart voor Texel en D66 Texel: Inzet voor Deuce
-• 8 D66, GroenLinks Texel en PvdA pro Texel - Ondersteuningsverklaring van de motie: ‘Laat Schiermonnikoog niet verzuipen!’
-• 9 HAMERSTUK - Zienswijze op de Kadernota 2027 Veiligheidsregio Noord-Holland Noord
-• 10 HAMERSTUK - Zienswijze Kadernota 2027 GR Regionaal Historisch Centrum Alkmaar / Regionaal Archief (GR RHCA)
-• 11 HAMERSTUK - Zienswijze Kadernota GR GGD
-• 12 HAMERSTUK - 7de wijziging van de GR GGD HN
-• 13 HAMERSTUK - Gemeenschappelijke Regeling Archeologie Westfriese Gemeenten - toestemming voor vaststelling
-• 14 Ruimte voor (nog openstaande) vragen vanuit de Rondvraag
-• 15 Sluiting
+• 3 Duiding van de uitslag van de gemeenteraadsverkiezingen, formatieproces en bestuursprogramma
+• 4 Gewenste kenmerken en competenties van verkenner(s); gesprek over opdracht aan de verkenner
+• 5 Rondvraag
+• 6 Sluiting
 
 Hoofdstukken:
-• 1:02:18 15 Sluiting]]></description>
-    <pubDate>Wed, 18 Feb 2026 03:00:00 +0000</pubDate>
-    <enclosure url="https://github.com/raadslens-creator/texel-raad-podcast/releases/download/vergadering-20260218_1/20260218_1.mp3" type="audio/mpeg" length="36624993"/>
-    <guid isPermaLink="false">20260218_1</guid>
-    <itunes:duration>1:06:50</itunes:duration>
+• 00:00 1 Opening en mededelingen
+• 01:00 2 Vaststelling agenda
+• 03:27 3 Duiding van de uitslag van de gemeenteraadsverkiezingen, formatieproces en bes
+• 04:27 4 Gewenste kenmerken en competenties van verkenner(s); gesprek over opdracht aan
+• 05:27 5 Rondvraag
+• 06:27 6 Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt, zonder drie uur voor een scherm te zitten.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op texel.bestuurlijkeinformatie.nl.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Mon, 23 Mar 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://github.com/raadslens-creator/texel-raad-podcast/releases/download/vergadering-20260323_1/20260323_1.mp3" type="audio/mpeg" length="13661084"/>
+    <guid isPermaLink="false">20260323_1</guid>
+    <itunes:duration>0:25:18</itunes:duration>
     <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
   </item>
 </channel>
