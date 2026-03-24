@@ -258,7 +258,7 @@ def build_transcript(segments, speakers, data, date_str):
             current_block.append(text)
 
     # Laatste blok
-    if current_block:
+    if current_block and current_start is not None:
         ts = format_timestamp(current_start)
         label = current_speaker.upper() if current_speaker else ""
         lines.append(f"[{ts}] {label}".strip())
