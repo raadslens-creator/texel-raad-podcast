@@ -3,9 +3,10 @@
 Raadslens - Transcriptie script
 - Haalt de laatste vergadering op uit de GitHub releases
 - Download de MP3
-- Transcribeert met faster-whisper + custom vocabulary
+- Transcribeert met faster-whisper + vocabulary (achternamen + naam-cache)
 - Koppelt sprekers op basis van tijdstempels uit de RoyalCast API
 - Corrigeert timing voor weggeknipt intro en schorsingen
+- Bouwt automatisch een naam-cache op uit de API
 - Slaat op als tekstbestand in docs/transcripties/
 """
 
@@ -16,7 +17,7 @@ import subprocess
 import sys
 import urllib.request
 import urllib.error
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROYALCAST_API = "https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel"
@@ -24,6 +25,7 @@ REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 DATE_ID = os.environ.get("DATE_ID", "")
 TRANSCRIPTIES_DIR = Path("docs/transcripties")
+NAMEN_CACHE_FILE = Path("docs/namen_cache.json")
 
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
@@ -31,58 +33,66 @@ MAANDEN = {
     9: "september", 10: "oktober", 11: "november", 12: "december"
 }
 
-# Custom vocabulary voor Whisper - Texelse namen, plaatsen en politici
-TEXEL_VOCABULARY = """
-Texel, Texels, Texelaar, Texelaars, Den Burg, De Koog, De Cocksdorp, Oosterend, 
-Oudeschild, De Waal, Midsland, Sint Maartenszee, De Westereen,
-Waddeneilanden, Waddenzee, Schiermonnikoog, Vlieland, Terschelling, Ameland,
-TESO, Marsdiep, Eijerland, Slufter, Muy, Texelse Courant,
-gemeenteraad, raadsvergadering, raadslid, wethouder, burgemeester, griffier,
-college van B en W, burgemeester en wethouders, raadsbesluit, amendement,
-zienswijze, kadernota, coalitieakkoord, bestuursakkoord, hamerstuk, bespreekstuk,
-motie, initiatiefvoorstel, interpellatie, reglement van orde,
-Texels Belang, PvdA, GroenLinks, VVD, CDA, D66, Hart voor Texel, SP,
-Mark Pol, burgemeester Pol,
-Anneke Visser-Veltkamp, Remko van de Belt, Cecile Komdeur, Daniëlle Breedveld,
-Margreet van Ouwendorp, Ruud Boschman, Aafke van Bruggen, Marloes Schooneman,
-Natasja Lelij, Eric Hercules,
-Jacquelien Dros, Jolanda Mokveld, Anke Wiersma, Arnout ter Borg,
-Felix von Meyjenfeldt, Henry Soyer, Hanneke Festen, Gerrit Berger,
-Wouter te Sligte, Nathalie Bale, Nicolien Bohnen, Ferry Zegel, Hans Ridderinkhof,
-Rikus Kieft,
-Nick Ran, Nannette Albers, Albert Huisman, Jan Bakker, Cees van der Werff,
-Joost van Wijk, Inge de Lange, Ellen van den Heuvel, Sema Ciçek,
-Gert van Lingen, Jan Schuiringa, Sjaak Mantje, Rob Korl, Piet Koenen,
-Maaike Timmer, Jeroen Eelman, Jan Knol, Marianne Pellen, Paul Kaak,
-Jan Rab, René Tromp,
-Niels Rutten, Teun Houwing, Cobie van der Knaap, Bert Zegeren,
-Erik Witte, Pieter Hoogerheide,
-Astrid van de Wetering, Mathilde Leclou, Danny Holman, Hans Barendregt,
-Marjolein Holman, Anke Aardema, Sjoerd Huitema, Floris van Overmeeren,
-Jan Bas, Christian Verbraeken, Mirjam Snijders, Björn Bakker, Yette Brinkman,
-Robin van Damme, Rik Eijzinga, Henk Lindeboom, Coen van Heerwaarden,
-Mariët van der Werf, Sander de Lugt, Vera Koot, Hans Timmermans,
-Frank Oosterhof, Arie Kuip, Jildert Hooijschuur, René Duinker,
-Renske Zwezerijn, Elly Hooijschuur, Marianne Heijne, Kees van Dee,
-Wijnand Dros, Robert Kuip, Annemieke de Boer, Jan Groeskamp,
-Hendrik van der Wal, Klazien Kikkert, Carla Dros, Cor Hoogerheide,
-Esther Polderman, Eric Kooiman, Dennis Vonk, Jan Bloem,
-Diana Schouwstra, Greetje Boumans-Beijert, Andi Kaercher, Wijnand van Beek,
-Marian Eelman, Merel Röpke, Marianne Ris, Marloes Zegers, Jan Kalis,
-Joke Krab, Cora de Porto, Sybren Daalder, Theo Stroes,
-Edwin van der Vaart, Sander Ekker, Sandra van 't Noordende, Pierre Kooiman,
-Jokien Winnubst,
-Jan Spelç, Sabien Overbeeke, Ronnie Adema, Anne Hoven,
-Miriam Hilhorst, Peter Geurtz, Astrid Cremers, Marlies Dijksen,
-Omgevingsdienst Noord-Holland Noord, ODNHN, Veiligheidsregio Noord-Holland Noord,
-GGD Hollands Noorden, Regionaal Historisch Centrum Alkmaar, RHCA,
-Regionale Raadscommissie Noordkop, RRN, Wvggz,
-toeristenbelasting, bestemmingsplan, omgevingsvisie, omgevingsplan,
-woningbouwprogramma, klimaatadaptatieplan, energietransitie,
-Stappeland, karthal, De Koog, vuurwerkverbod, natuurbeheer,
-kustverdediging, dijknormering, waterveiligheid, waddengebied,
-schuldenregeling, registratietermijn, sociale zekerheid
-"""
+# Achternamen die zeker kloppen uit het officiële proces-verbaal
+# Alleen achternamen - voornamen worden automatisch geleerd via de API
+ACHTERNAMEN_TEXEL = [
+    # Texels Belang
+    "van der Werf", "de Lugt", "Koot", "Timmermans", "Oosterhof", "Kuip",
+    "Hooijschuur", "Duinker", "Zwezerijn", "Heijne", "van Dee", "Dros",
+    "Groeskamp", "van der Wal", "Kikkert", "Hoogerheide",
+    # PvdA
+    "Visser-Veltkamp", "van de Belt", "Komdeur", "Breedveld", "van Ouwendorp",
+    "Boschman", "van Bruggen", "Schooneman", "Witte", "Lira", "Barnard",
+    "van IJsseldijk", "Oosterbaan", "Rudolph", "Lelij", "Hercules",
+    # GroenLinks
+    "Dros", "Mokveld", "Wiersma", "ter Borg", "von Meyjenfeldt", "Soyer",
+    "Festen", "Berger", "te Sligte", "Bale", "Bohnen", "de Vrind",
+    "Kompier", "de Jong", "Zegel", "Ridderinkhof", "Kieft",
+    # VVD
+    "Ran", "Albers", "Huisman", "Bakker", "van der Werff", "van Wijk",
+    "de Lange", "van den Heuvel", "Ciçek", "van Lingen", "Schuiringa",
+    "Mantje", "Korl", "Koenen", "Timmer", "Eelman", "Knol", "Pellen",
+    "Kaak", "Rab", "Tromp", "Steenvoorden", "van der Kooi",
+    # CDA
+    "Rutten", "Houwing", "van der Knaap", "Zegeren",
+    # D66
+    "van de Wetering", "Leclou", "Holman", "Barendregt", "Aardema",
+    "Huitema", "van Overmeeren", "Bas", "Verbraeken", "Snijders",
+    "Brinkman", "van Damme", "Eijzinga", "Lindeboom", "van Heerwaarden",
+    # Hart voor Texel
+    "Polderman", "Kooiman", "Vonk", "Bloem", "Schouwstra", "Boumans-Beijert",
+    "Kaercher", "van Beek", "Röpke", "Ris", "Zegers", "Kalis", "Krab",
+    "de Porto", "Daalder", "Stroes", "van der Vaart", "Ekker",
+    "van 't Noordende", "Winnubst",
+    # SP
+    "Spelç", "Overbeeke", "Adema", "Hoven", "Hilhorst", "Geurtz",
+    "Cremers", "Dijksen",
+    # Bestuur
+    "Pol", "Heijne-Dros",
+]
+
+# Plaatsnamen en vaste begrippen die altijd meegaan
+VASTE_BEGRIPPEN = [
+    "Texel", "Texels", "Texelaar", "Texelaars",
+    "Den Burg", "De Koog", "De Cocksdorp", "Oosterend", "Oudeschild",
+    "De Waal", "Midsland", "De Westereen", "Eijerland",
+    "Waddeneilanden", "Waddenzee", "Schiermonnikoog", "Vlieland",
+    "Terschelling", "Ameland", "TESO", "Marsdiep", "Slufter",
+    "gemeenteraad", "raadsvergadering", "raadslid", "wethouder",
+    "burgemeester", "griffier", "college van B en W",
+    "raadsbesluit", "amendement", "zienswijze", "kadernota",
+    "coalitieakkoord", "hamerstuk", "bespreekstuk", "motie",
+    "initiatiefvoorstel", "reglement van orde",
+    "Texels Belang", "GroenLinks", "Hart voor Texel",
+    "Omgevingsdienst Noord-Holland Noord", "ODNHN",
+    "Veiligheidsregio Noord-Holland Noord", "GGD Hollands Noorden",
+    "Regionaal Historisch Centrum Alkmaar", "RHCA",
+    "Regionale Raadscommissie Noordkop", "RRN",
+    "toeristenbelasting", "bestemmingsplan", "omgevingsvisie",
+    "woningbouwprogramma", "klimaatadaptatieplan", "energietransitie",
+    "Stappeland", "karthal", "vuurwerkverbod", "kustverdediging",
+    "dijknormering", "waterveiligheid", "waddengebied",
+]
 
 
 def log(msg):
@@ -97,6 +107,60 @@ def parse_royalcast_timestamp(ts_str):
     if match:
         return int(match.group()) / 1000
     return None
+
+
+def load_namen_cache():
+    """Laad de naam-cache met bekende volledige namen."""
+    if NAMEN_CACHE_FILE.exists():
+        return json.loads(NAMEN_CACHE_FILE.read_text())
+    return {}
+
+
+def save_namen_cache(cache):
+    """Sla de naam-cache op."""
+    NAMEN_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    NAMEN_CACHE_FILE.write_text(json.dumps(cache, indent=2, ensure_ascii=False))
+
+
+def update_namen_cache(data, cache):
+    """
+    Voeg nieuwe namen uit de API toe aan de cache.
+    Slaat volledige namen op gekoppeld aan achternaam als sleutel.
+    """
+    updated = False
+    for spreker in data.get("speakers", []):
+        naam = spreker.get("name", {})
+        voornaam = naam.get("first", "")
+        achternaam = naam.get("last", "")
+        tussenvoegsel = naam.get("middle", "")
+
+        if not achternaam or not voornaam:
+            continue
+
+        volledige_naam = " ".join(filter(None, [voornaam, tussenvoegsel, achternaam]))
+        sleutel = achternaam.lower()
+
+        if sleutel not in cache or cache[sleutel] != volledige_naam:
+            cache[sleutel] = volledige_naam
+            log(f"Naam geleerd: {volledige_naam}")
+            updated = True
+
+    return cache, updated
+
+
+def build_vocabulary(cache):
+    """Bouw de volledige vocabulary op voor Whisper."""
+    namen = list(VASTE_BEGRIPPEN)
+
+    # Voeg achternamen toe
+    namen.extend(ACHTERNAMEN_TEXEL)
+
+    # Voeg volledige namen uit cache toe
+    for volledige_naam in cache.values():
+        if volledige_naam not in namen:
+            namen.append(volledige_naam)
+
+    return ", ".join(namen)
 
 
 def get_latest_release_with_mp3():
@@ -192,8 +256,8 @@ def get_intro_duration(data):
     return max(0, earliest_event - actual_start)
 
 
-def get_silence_duration_before(audio_file, threshold_db="-35dB", min_duration=45):
-    """Bereken totale verwijderde stilte-duur via ffmpeg stiltedetectie."""
+def detect_silences(audio_file, threshold_db="-35dB", min_duration=45):
+    """Detecteer schorsingen via ffmpeg."""
     detect_cmd = [
         "ffmpeg", "-i", audio_file,
         "-af", f"silencedetect=noise={threshold_db}:d={min_duration}",
@@ -202,19 +266,15 @@ def get_silence_duration_before(audio_file, threshold_db="-35dB", min_duration=4
     result = subprocess.run(detect_cmd, capture_output=True, text=True)
     starts = re.findall(r"silence_start: ([\d.]+)", result.stderr)
     ends = re.findall(r"silence_end: ([\d.]+)", result.stderr)
-    silences = [
+    return [
         (float(s), float(e))
         for s, e in zip(starts, ends)
         if float(e) - float(s) >= min_duration
     ]
-    return silences
 
 
 def get_speaker_timeline(data):
-    """
-    Bouw sprekerlijst op met gecorrigeerde tijdstempels.
-    Geeft lijst van (start_sec, end_sec, naam) tuples relatief aan actualStart.
-    """
+    """Bouw sprekerlijst op met tijdstempels relatief aan actualStart."""
     actual_start = parse_royalcast_timestamp(data.get("actualStart"))
     if not actual_start:
         log("Geen actualStart - sprekerherkenning beperkt")
@@ -224,25 +284,24 @@ def get_speaker_timeline(data):
     for spreker in data.get("speakers", []):
         naam = spreker.get("name", {})
         volledige_naam = " ".join(filter(None, [
-            naam.get("title"),
-            naam.get("first"),
-            naam.get("middle"),
-            naam.get("last"),
+            naam.get("first", ""),
+            naam.get("middle", ""),
+            naam.get("last", ""),
         ])).strip()
         if not volledige_naam:
             continue
 
         for event in spreker.get("events", []):
-            start_ms = parse_royalcast_timestamp(event.get("start"))
-            end_ms = parse_royalcast_timestamp(event.get("end"))
-            if not start_ms or not end_ms:
+            start_sec = parse_royalcast_timestamp(event.get("start"))
+            end_sec = parse_royalcast_timestamp(event.get("end"))
+            if not start_sec or not end_sec:
                 continue
 
-            start_sec = start_ms - actual_start
-            end_sec = end_ms - actual_start
+            rel_start = start_sec - actual_start
+            rel_end = end_sec - actual_start
 
-            if start_sec >= 0:
-                speakers.append((start_sec, end_sec, volledige_naam))
+            if rel_start >= 0:
+                speakers.append((rel_start, rel_end, volledige_naam))
 
     speakers.sort(key=lambda x: x[0])
     log(f"{len(speakers)} spreekbeurten voor {len(set(s[2] for s in speakers))} sprekers")
@@ -250,18 +309,12 @@ def get_speaker_timeline(data):
 
 
 def correct_speaker_times(speakers, intro_sec, silences):
-    """
-    Corrigeer spreker-tijdstempels voor:
-    1. Weggeknipt intro
-    2. Verwijderde schorsingen
-    """
+    """Corrigeer spreker-tijdstempels voor intro en schorsingen."""
     corrected = []
     for start, end, naam in speakers:
-        # Corrigeer voor intro
         t_start = max(0, start - intro_sec)
         t_end = max(0, end - intro_sec)
 
-        # Corrigeer voor verwijderde schorsingen
         removed_start = sum(
             min(sil_end, t_start) - sil_start
             for sil_start, sil_end in silences
@@ -290,7 +343,7 @@ def find_speaker_at(timestamp, speakers):
     return None
 
 
-def transcribe_audio(audio_file):
+def transcribe_audio(audio_file, vocabulary):
     """Transcribeer audio met faster-whisper en custom vocabulary."""
     log("Transcriptie starten met faster-whisper...")
     log("Model laden...")
@@ -303,7 +356,7 @@ def transcribe_audio(audio_file):
         audio_file,
         language="nl",
         beam_size=3,
-        initial_prompt=TEXEL_VOCABULARY,
+        initial_prompt=vocabulary,
         vad_filter=True,
         vad_parameters=dict(min_silence_duration_ms=500)
     )
@@ -335,8 +388,8 @@ def format_timestamp(sec):
 def build_transcript(segments, speakers, data, date_str):
     """Bouw de volledige transcriptie op met sprekersnamen en tijdstempels."""
     lines = []
-    lines.append(f"RAADSVERGADERING TEXEL")
-    lines.append(f"{date_str}")
+    lines.append("RAADSVERGADERING TEXEL")
+    lines.append(date_str)
     lines.append("=" * 60)
     lines.append("")
 
@@ -433,6 +486,10 @@ def main():
         log("Geen REPO of GITHUB_TOKEN")
         sys.exit(1)
 
+    # Naam-cache laden
+    cache = load_namen_cache()
+    log(f"Naam-cache: {len(cache)} bekende namen")
+
     # Bepaal welke vergadering
     if DATE_ID:
         log(f"Handmatig opgegeven: {DATE_ID}")
@@ -459,6 +516,17 @@ def main():
     # Webcast-data ophalen
     data = get_webcast_data(date_id)
 
+    # Namen uit API toevoegen aan cache
+    if data:
+        cache, updated = update_namen_cache(data, cache)
+        if updated:
+            save_namen_cache(cache)
+            log(f"Naam-cache bijgewerkt: {len(cache)} namen")
+
+    # Vocabulary opbouwen
+    vocabulary = build_vocabulary(cache)
+    log(f"Vocabulary: {len(cache)} volledige namen + achternamen + begrippen")
+
     # Intro-duur berekenen
     intro_sec = get_intro_duration(data)
     log(f"Intro: {intro_sec:.0f}s")
@@ -468,19 +536,19 @@ def main():
 
     # Stiltes detecteren voor timing-correctie
     log("Stiltes detecteren voor timing-correctie...")
-    silences = get_silence_duration_before(audio_file)
+    silences = detect_silences(audio_file)
     log(f"{len(silences)} schorsingen gevonden")
 
     # Sprekerdata ophalen en corrigeren
     raw_speakers = get_speaker_timeline(data)
     if raw_speakers:
         speakers = correct_speaker_times(raw_speakers, intro_sec, silences)
-        log(f"Spreker-tijden gecorrigeerd voor intro ({intro_sec:.0f}s) en {len(silences)} schorsingen")
+        log(f"Spreker-tijden gecorrigeerd")
     else:
         speakers = []
 
     # Transcriberen
-    segments = transcribe_audio(audio_file)
+    segments = transcribe_audio(audio_file, vocabulary)
     if not segments:
         log("Geen transcriptie gegenereerd")
         sys.exit(1)
