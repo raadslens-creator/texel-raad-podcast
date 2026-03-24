@@ -2,7 +2,7 @@ name: Fetch Raadsvergadering
 
 on:
   schedule:
-    - cron: "0 1 * * 4"
+    - cron: "0 1 * * 2,3,4"
   workflow_dispatch:
 
 jobs:
