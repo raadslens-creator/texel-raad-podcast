@@ -1,0 +1,52 @@
+name: Transcribeer Vergadering
+
+on:
+  workflow_run:
+    workflows: ["Fetch Raadsvergadering"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      date_id:
+        description: "Vergadering ID (bijv. 20260323_1)"
+        required: false
+
+jobs:
+  transcribe:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Alleen draaien als de fetch workflow succesvol was
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Python instellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Dependencies installeren
+        run: |
+          pip install faster-whisper requests mutagen
+          sudo apt-get update -o Acquire::Retries=3
+          sudo apt-get install -y ffmpeg --fix-missing
+
+      - name: Transcriberen
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          DATE_ID: ${{ github.event.inputs.date_id }}
+        run: python transcribe_vergadering.py
+
+      - name: Transcripties committen
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/transcripties/ || true
+          git diff --staged --quiet || git commit -m "Transcriptie toegevoegd [skip ci]"
+          git push
