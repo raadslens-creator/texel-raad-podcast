@@ -26,7 +26,7 @@ def get_recent_webcast_ids():
     """Genereer mogelijke webcast IDs voor de afgelopen 14 dagen."""
     ids = []
     today = datetime.now(timezone.utc)
-    for days_ago in range(0, 14):
+    for days_ago in range(0, 45):
         date = today - timedelta(days=days_ago)
         date_str = date.strftime("%Y%m%d")
         for n in [1, 2, 3]:
