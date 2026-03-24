@@ -3,8 +3,9 @@
 Raadslens - Transcriptie script
 - Haalt de laatste vergadering op uit de GitHub releases
 - Download de MP3
-- Transcribeert met faster-whisper
+- Transcribeert met faster-whisper + custom vocabulary
 - Koppelt sprekers op basis van tijdstempels uit de RoyalCast API
+- Corrigeert timing voor weggeknipt intro en schorsingen
 - Slaat op als tekstbestand in docs/transcripties/
 """
 
@@ -21,7 +22,7 @@ from pathlib import Path
 ROYALCAST_API = "https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel"
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
-DATE_ID = os.environ.get("DATE_ID", "")  # Optioneel: handmatig opgeven
+DATE_ID = os.environ.get("DATE_ID", "")
 TRANSCRIPTIES_DIR = Path("docs/transcripties")
 
 MAANDEN = {
@@ -30,25 +31,78 @@ MAANDEN = {
     9: "september", 10: "oktober", 11: "november", 12: "december"
 }
 
+# Custom vocabulary voor Whisper - Texelse namen, plaatsen en politici
+TEXEL_VOCABULARY = """
+Texel, Texels, Texelaar, Texelaars, Den Burg, De Koog, De Cocksdorp, Oosterend, 
+Oudeschild, De Waal, Midsland, Sint Maartenszee, De Westereen,
+Waddeneilanden, Waddenzee, Schiermonnikoog, Vlieland, Terschelling, Ameland,
+TESO, Marsdiep, Eijerland, Slufter, Muy, Texelse Courant,
+gemeenteraad, raadsvergadering, raadslid, wethouder, burgemeester, griffier,
+college van B en W, burgemeester en wethouders, raadsbesluit, amendement,
+zienswijze, kadernota, coalitieakkoord, bestuursakkoord, hamerstuk, bespreekstuk,
+motie, initiatiefvoorstel, interpellatie, reglement van orde,
+Texels Belang, PvdA, GroenLinks, VVD, CDA, D66, Hart voor Texel, SP,
+Mark Pol, burgemeester Pol,
+Anneke Visser-Veltkamp, Remko van de Belt, Cecile Komdeur, Daniëlle Breedveld,
+Margreet van Ouwendorp, Ruud Boschman, Aafke van Bruggen, Marloes Schooneman,
+Natasja Lelij, Eric Hercules,
+Jacquelien Dros, Jolanda Mokveld, Anke Wiersma, Arnout ter Borg,
+Felix von Meyjenfeldt, Henry Soyer, Hanneke Festen, Gerrit Berger,
+Wouter te Sligte, Nathalie Bale, Nicolien Bohnen, Ferry Zegel, Hans Ridderinkhof,
+Rikus Kieft,
+Nick Ran, Nannette Albers, Albert Huisman, Jan Bakker, Cees van der Werff,
+Joost van Wijk, Inge de Lange, Ellen van den Heuvel, Sema Ciçek,
+Gert van Lingen, Jan Schuiringa, Sjaak Mantje, Rob Korl, Piet Koenen,
+Maaike Timmer, Jeroen Eelman, Jan Knol, Marianne Pellen, Paul Kaak,
+Jan Rab, René Tromp,
+Niels Rutten, Teun Houwing, Cobie van der Knaap, Bert Zegeren,
+Erik Witte, Pieter Hoogerheide,
+Astrid van de Wetering, Mathilde Leclou, Danny Holman, Hans Barendregt,
+Marjolein Holman, Anke Aardema, Sjoerd Huitema, Floris van Overmeeren,
+Jan Bas, Christian Verbraeken, Mirjam Snijders, Björn Bakker, Yette Brinkman,
+Robin van Damme, Rik Eijzinga, Henk Lindeboom, Coen van Heerwaarden,
+Mariët van der Werf, Sander de Lugt, Vera Koot, Hans Timmermans,
+Frank Oosterhof, Arie Kuip, Jildert Hooijschuur, René Duinker,
+Renske Zwezerijn, Elly Hooijschuur, Marianne Heijne, Kees van Dee,
+Wijnand Dros, Robert Kuip, Annemieke de Boer, Jan Groeskamp,
+Hendrik van der Wal, Klazien Kikkert, Carla Dros, Cor Hoogerheide,
+Esther Polderman, Eric Kooiman, Dennis Vonk, Jan Bloem,
+Diana Schouwstra, Greetje Boumans-Beijert, Andi Kaercher, Wijnand van Beek,
+Marian Eelman, Merel Röpke, Marianne Ris, Marloes Zegers, Jan Kalis,
+Joke Krab, Cora de Porto, Sybren Daalder, Theo Stroes,
+Edwin van der Vaart, Sander Ekker, Sandra van 't Noordende, Pierre Kooiman,
+Jokien Winnubst,
+Jan Spelç, Sabien Overbeeke, Ronnie Adema, Anne Hoven,
+Miriam Hilhorst, Peter Geurtz, Astrid Cremers, Marlies Dijksen,
+Omgevingsdienst Noord-Holland Noord, ODNHN, Veiligheidsregio Noord-Holland Noord,
+GGD Hollands Noorden, Regionaal Historisch Centrum Alkmaar, RHCA,
+Regionale Raadscommissie Noordkop, RRN, Wvggz,
+toeristenbelasting, bestemmingsplan, omgevingsvisie, omgevingsplan,
+woningbouwprogramma, klimaatadaptatieplan, energietransitie,
+Stappeland, karthal, De Koog, vuurwerkverbod, natuurbeheer,
+kustverdediging, dijknormering, waterveiligheid, waddengebied,
+schuldenregeling, registratietermijn, sociale zekerheid
+"""
+
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
-def fetch_json(url):
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0",
-        "Authorization": f"token {GITHUB_TOKEN}" if "api.github.com" in url else ""
-    })
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read())
+def parse_royalcast_timestamp(ts_str):
+    """Zet /Date(1771437970000)/ om naar seconden."""
+    if not ts_str:
+        return None
+    match = re.search(r"\d+", ts_str)
+    if match:
+        return int(match.group()) / 1000
+    return None
 
 
-def get_latest_date_id():
-    """Zoek de meest recente vergadering die nog geen transcriptie heeft."""
+def get_latest_release_with_mp3():
+    """Zoek de meest recente release die nog geen transcriptie heeft."""
     TRANSCRIPTIES_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Haal releases op van GitHub
     url = f"https://api.github.com/repos/{REPO}/releases?per_page=10"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
@@ -60,19 +114,16 @@ def get_latest_date_id():
 
     for release in releases:
         tag = release.get("tag_name", "")
-        # Tag formaat: vergadering-20260323_1
         match = re.search(r"vergadering-(\d{8}_\d+)", tag)
         if not match:
             continue
         date_id = match.group(1)
 
-        # Controleer of transcriptie al bestaat
         transcript_file = TRANSCRIPTIES_DIR / f"{date_id}.txt"
         if transcript_file.exists():
             log(f"Transcriptie bestaat al: {date_id}")
             continue
 
-        # Zoek MP3 in release assets
         for asset in release.get("assets", []):
             if asset["name"].endswith(".mp3"):
                 return date_id, asset["browser_download_url"]
@@ -80,11 +131,27 @@ def get_latest_date_id():
     return None, None
 
 
+def get_release_mp3_url(date_id):
+    """Haal MP3 URL op van een specifieke release."""
+    url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+    }
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        release = json.loads(resp.read())
+    for asset in release.get("assets", []):
+        if asset["name"].endswith(".mp3"):
+            return asset["browser_download_url"]
+    return None
+
+
 def download_mp3(url, date_id):
     """Download MP3 van GitHub release."""
     output = f"audio/{date_id}_transcript.mp3"
     Path("audio").mkdir(exist_ok=True)
-    log(f"MP3 downloaden: {url[:60]}...")
+    log(f"MP3 downloaden...")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=300) as resp:
         with open(output, "wb") as f:
@@ -93,28 +160,65 @@ def download_mp3(url, date_id):
     return output
 
 
-def get_speaker_timeline(date_id):
-    """
-    Haal sprekerdata op uit de RoyalCast API.
-    Geeft een gesorteerde lijst van (start_sec, eind_sec, naam) tuples.
-    """
+def get_webcast_data(date_id):
+    """Haal volledige webcast-data op inclusief sprekers en tijdstempels."""
     url = f"{ROYALCAST_API}/{date_id}?method=GET&key="
-    log(f"Sprekerdata ophalen...")
+    log(f"Webcast-data ophalen...")
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read())
+            return json.loads(resp.read())
     except Exception as e:
         log(f"API fout: {e}")
-        return [], None
+        return {}
 
-    actual_start = data.get("actualStart")
-    if actual_start:
-        # Formaat: /Date(1771437970000)/
-        ms = int(re.search(r"\d+", actual_start).group())
-        start_epoch = ms / 1000
-    else:
-        start_epoch = None
+
+def get_intro_duration(data):
+    """Bereken intro-duur: tijd tussen actualStart en eerste topic-event."""
+    actual_start = parse_royalcast_timestamp(data.get("actualStart"))
+    if not actual_start:
+        return 0
+
+    earliest_event = None
+    for topic in data.get("topics", []):
+        for event in topic.get("events", []):
+            event_start = parse_royalcast_timestamp(event.get("start"))
+            if event_start and (earliest_event is None or event_start < earliest_event):
+                earliest_event = event_start
+
+    if not earliest_event:
+        return 0
+
+    return max(0, earliest_event - actual_start)
+
+
+def get_silence_duration_before(audio_file, threshold_db="-35dB", min_duration=45):
+    """Bereken totale verwijderde stilte-duur via ffmpeg stiltedetectie."""
+    detect_cmd = [
+        "ffmpeg", "-i", audio_file,
+        "-af", f"silencedetect=noise={threshold_db}:d={min_duration}",
+        "-f", "null", "-"
+    ]
+    result = subprocess.run(detect_cmd, capture_output=True, text=True)
+    starts = re.findall(r"silence_start: ([\d.]+)", result.stderr)
+    ends = re.findall(r"silence_end: ([\d.]+)", result.stderr)
+    silences = [
+        (float(s), float(e))
+        for s, e in zip(starts, ends)
+        if float(e) - float(s) >= min_duration
+    ]
+    return silences
+
+
+def get_speaker_timeline(data):
+    """
+    Bouw sprekerlijst op met gecorrigeerde tijdstempels.
+    Geeft lijst van (start_sec, end_sec, naam) tuples relatief aan actualStart.
+    """
+    actual_start = parse_royalcast_timestamp(data.get("actualStart"))
+    if not actual_start:
+        log("Geen actualStart - sprekerherkenning beperkt")
+        return []
 
     speakers = []
     for spreker in data.get("speakers", []):
@@ -129,22 +233,53 @@ def get_speaker_timeline(date_id):
             continue
 
         for event in spreker.get("events", []):
-            start_ms = int(re.search(r"\d+", event.get("start", "/Date(0)/")).group())
-            end_ms = int(re.search(r"\d+", event.get("end", "/Date(0)/")).group())
+            start_ms = parse_royalcast_timestamp(event.get("start"))
+            end_ms = parse_royalcast_timestamp(event.get("end"))
+            if not start_ms or not end_ms:
+                continue
 
-            if start_epoch:
-                start_sec = (start_ms / 1000) - start_epoch
-                end_sec = (end_ms / 1000) - start_epoch
-            else:
-                start_sec = start_ms / 1000
-                end_sec = end_ms / 1000
+            start_sec = start_ms - actual_start
+            end_sec = end_ms - actual_start
 
             if start_sec >= 0:
                 speakers.append((start_sec, end_sec, volledige_naam))
 
     speakers.sort(key=lambda x: x[0])
-    log(f"{len(speakers)} spreekbeurten gevonden voor {len(set(s[2] for s in speakers))} sprekers")
-    return speakers, data
+    log(f"{len(speakers)} spreekbeurten voor {len(set(s[2] for s in speakers))} sprekers")
+    return speakers
+
+
+def correct_speaker_times(speakers, intro_sec, silences):
+    """
+    Corrigeer spreker-tijdstempels voor:
+    1. Weggeknipt intro
+    2. Verwijderde schorsingen
+    """
+    corrected = []
+    for start, end, naam in speakers:
+        # Corrigeer voor intro
+        t_start = max(0, start - intro_sec)
+        t_end = max(0, end - intro_sec)
+
+        # Corrigeer voor verwijderde schorsingen
+        removed_start = sum(
+            min(sil_end, t_start) - sil_start
+            for sil_start, sil_end in silences
+            if sil_start < t_start
+        )
+        removed_end = sum(
+            min(sil_end, t_end) - sil_start
+            for sil_start, sil_end in silences
+            if sil_start < t_end
+        )
+
+        corrected.append((
+            max(0, t_start - removed_start),
+            max(0, t_end - removed_end),
+            naam
+        ))
+
+    return corrected
 
 
 def find_speaker_at(timestamp, speakers):
@@ -152,26 +287,15 @@ def find_speaker_at(timestamp, speakers):
     for start, end, naam in speakers:
         if start <= timestamp <= end:
             return naam
-    # Zoek dichtstbijzijnde spreker binnen 30 seconden
-    closest = None
-    closest_dist = 30
-    for start, end, naam in speakers:
-        dist = min(abs(timestamp - start), abs(timestamp - end))
-        if dist < closest_dist:
-            closest_dist = dist
-            closest = naam
-    return closest
+    return None
 
 
 def transcribe_audio(audio_file):
-    """Transcribeer audio met faster-whisper."""
+    """Transcribeer audio met faster-whisper en custom vocabulary."""
     log("Transcriptie starten met faster-whisper...")
-    log("Model downloaden (eenmalig, ~150MB)...")
+    log("Model laden...")
 
     from faster_whisper import WhisperModel
-
-    # Small model - goed genoeg voor Nederlands raadsvergadering
-    # Gebruik int8 voor snelheid op CPU
     model = WhisperModel("small", device="cpu", compute_type="int8")
 
     log("Transcriberen...")
@@ -179,10 +303,9 @@ def transcribe_audio(audio_file):
         audio_file,
         language="nl",
         beam_size=3,
-        vad_filter=True,           # Voice activity detection - stiltes overslaan
-        vad_parameters=dict(
-            min_silence_duration_ms=500
-        )
+        initial_prompt=TEXEL_VOCABULARY,
+        vad_filter=True,
+        vad_parameters=dict(min_silence_duration_ms=500)
     )
 
     log(f"Taal gedetecteerd: {info.language} ({info.language_probability:.0%})")
@@ -210,14 +333,13 @@ def format_timestamp(sec):
 
 
 def build_transcript(segments, speakers, data, date_str):
-    """Bouw de volledige transcriptie op met sprekersnamen."""
+    """Bouw de volledige transcriptie op met sprekersnamen en tijdstempels."""
     lines = []
     lines.append(f"RAADSVERGADERING TEXEL")
     lines.append(f"{date_str}")
     lines.append("=" * 60)
     lines.append("")
 
-    # Agendapunten als referentie
     topics = data.get("topics", []) if data else []
     if topics:
         lines.append("AGENDA")
@@ -241,15 +363,10 @@ def build_transcript(segments, speakers, data, date_str):
         text = seg["text"]
 
         if speaker != current_speaker:
-            # Sla vorige spreker-blok op
-            if current_block and current_speaker:
+            if current_block and current_start is not None:
                 ts = format_timestamp(current_start)
-                lines.append(f"[{ts}] {current_speaker.upper()}")
-                lines.append(" ".join(current_block))
-                lines.append("")
-            elif current_block:
-                ts = format_timestamp(current_start)
-                lines.append(f"[{ts}]")
+                label = f" {current_speaker.upper()}" if current_speaker else ""
+                lines.append(f"[{ts}]{label}")
                 lines.append(" ".join(current_block))
                 lines.append("")
 
@@ -259,11 +376,10 @@ def build_transcript(segments, speakers, data, date_str):
         else:
             current_block.append(text)
 
-    # Laatste blok
-    if current_block:
+    if current_block and current_start is not None:
         ts = format_timestamp(current_start)
-        label = current_speaker.upper() if current_speaker else ""
-        lines.append(f"[{ts}] {label}".strip())
+        label = f" {current_speaker.upper()}" if current_speaker else ""
+        lines.append(f"[{ts}]{label}")
         lines.append(" ".join(current_block))
         lines.append("")
 
@@ -275,7 +391,6 @@ def upload_transcript_to_release(date_id, transcript_text):
     if not GITHUB_TOKEN or not REPO:
         return
 
-    # Zoek de release
     url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
@@ -322,25 +437,12 @@ def main():
     if DATE_ID:
         log(f"Handmatig opgegeven: {DATE_ID}")
         date_id = DATE_ID
-        # Zoek MP3 URL in releases
-        url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
-        headers = {
-            "Authorization": f"token {GITHUB_TOKEN}",
-            "Accept": "application/vnd.github+json",
-        }
-        req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            release = json.loads(resp.read())
-        mp3_url = None
-        for asset in release.get("assets", []):
-            if asset["name"].endswith(".mp3"):
-                mp3_url = asset["browser_download_url"]
-                break
+        mp3_url = get_release_mp3_url(date_id)
         if not mp3_url:
             log("Geen MP3 gevonden in release")
             sys.exit(1)
     else:
-        date_id, mp3_url = get_latest_date_id()
+        date_id, mp3_url = get_latest_release_with_mp3()
         if not date_id:
             log("Geen vergadering gevonden om te transcriberen")
             sys.exit(0)
@@ -354,15 +456,31 @@ def main():
     except Exception:
         date_str = date_id[:8]
 
-    # Sprekerdata ophalen
-    speakers, data = get_speaker_timeline(date_id)
+    # Webcast-data ophalen
+    data = get_webcast_data(date_id)
+
+    # Intro-duur berekenen
+    intro_sec = get_intro_duration(data)
+    log(f"Intro: {intro_sec:.0f}s")
 
     # MP3 downloaden
     audio_file = download_mp3(mp3_url, date_id)
 
+    # Stiltes detecteren voor timing-correctie
+    log("Stiltes detecteren voor timing-correctie...")
+    silences = get_silence_duration_before(audio_file)
+    log(f"{len(silences)} schorsingen gevonden")
+
+    # Sprekerdata ophalen en corrigeren
+    raw_speakers = get_speaker_timeline(data)
+    if raw_speakers:
+        speakers = correct_speaker_times(raw_speakers, intro_sec, silences)
+        log(f"Spreker-tijden gecorrigeerd voor intro ({intro_sec:.0f}s) en {len(silences)} schorsingen")
+    else:
+        speakers = []
+
     # Transcriberen
     segments = transcribe_audio(audio_file)
-
     if not segments:
         log("Geen transcriptie gegenereerd")
         sys.exit(1)
