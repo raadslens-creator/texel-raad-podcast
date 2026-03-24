@@ -540,10 +540,10 @@ def main():
     log(f"{len(silences)} schorsingen gevonden")
 
     # Sprekerdata ophalen en corrigeren
-    raw_speakers = get_speaker_timeline(data)
     if raw_speakers:
-        speakers = correct_speaker_times(raw_speakers, intro_sec, silences)
-        log(f"Spreker-tijden gecorrigeerd")
+        # Tijdelijk zonder correctie - direct relatief aan actualStart
+        speakers = raw_speakers
+        log(f"Sprekers zonder tijdcorrectie")
     else:
         speakers = []
 
