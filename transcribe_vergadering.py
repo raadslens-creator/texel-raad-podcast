@@ -1046,149 +1046,177 @@ def find_speaker_at(timestamp, speakers):
 
 
 # ============================================================
-# TRANSCRIPTIE
+# NIEUWE TRANSCRIPTIE ENGINE (RAADSLENS V3)
 # ============================================================
 
-def transcribe_audio(audio_file, vocabulary):
-    log("Transcriptie starten met faster-whisper...")
-    log("Model laden...")
+import math
+import concurrent.futures
+
+
+CHUNK_LENGTH = 600  # 10 minuten
+PARALLEL_WORKERS = 2
+
+
+def normalize_audio(input_file):
+
+    output = input_file.replace(".mp3", "_norm.mp3")
+
+    if os.path.exists(output):
+        log("Genormaliseerde audio bestaat al")
+        return output
+
+    log("Audio normaliseren...")
+
+    subprocess.run([
+        "ffmpeg",
+        "-i", input_file,
+        "-af", "loudnorm",
+        "-y",
+        output
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    return output
+
+
+def split_audio(audio_file):
+
+    log("Audio in chunks knippen...")
+
+    duration = float(subprocess.check_output([
+        "ffprobe",
+        "-i", audio_file,
+        "-show_entries", "format=duration",
+        "-v", "quiet",
+        "-of", "csv=p=0"
+    ]))
+
+    chunks = []
+    total_chunks = math.ceil(duration / CHUNK_LENGTH)
+
+    for i in range(total_chunks):
+
+        start = i * CHUNK_LENGTH
+        chunk_file = f"chunk_{i}.mp3"
+
+        subprocess.run([
+            "ffmpeg",
+            "-i", audio_file,
+            "-ss", str(start),
+            "-t", str(CHUNK_LENGTH),
+            "-acodec", "copy",
+            "-y",
+            chunk_file
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        chunks.append((chunk_file, start))
+
+    log(f"{len(chunks)} chunks gemaakt")
+
+    return chunks
+
+
+def transcribe_chunk(args):
+
+    chunk_file, offset, vocabulary = args
+
     from faster_whisper import WhisperModel
-    model = WhisperModel("small", device="cpu", compute_type="int8")
-    log("Transcriberen...")
-    segments, info = model.transcribe(
-        audio_file,
-        language="nl",
-        beam_size=3,
-        initial_prompt=vocabulary,
-        vad_filter=True,
-        vad_parameters=dict(
-            min_silence_duration_ms=500,
-            speech_pad_ms=400,
-            threshold=0.3,
-        )
+
+    model = WhisperModel(
+        "medium",
+        device="cpu",
+        compute_type="int8"
     )
-    log(f"Taal gedetecteerd: {info.language} ({info.language_probability:.0%})")
+
+    log(f"Transcriberen {chunk_file}")
+
+    segments, _ = model.transcribe(
+        chunk_file,
+        language="nl",
+        vad_filter=False,
+        condition_on_previous_text=False,
+        beam_size=5,
+        best_of=5,
+        temperature=0,
+        initial_prompt=vocabulary
+    )
+
     result = []
-    for segment in segments:
+
+    for s in segments:
+
+        text = s.text.strip()
+
+        if not text or len(text) < 2:
+            continue
+
         result.append({
-            "start": segment.start,
-            "end": segment.end,
-            "text": segment.text.strip(),
+            "start": float(s.start) + offset,
+            "end": float(s.end) + offset,
+            "text": text
         })
-    log(f"{len(result)} segmenten getranscribeerd")
+
+    os.remove(chunk_file)
+
     return result
 
 
-def format_timestamp(sec):
-    if sec is None:
-        return "00:00:00"
-    h = int(sec // 3600)
-    m = int((sec % 3600) // 60)
-    s = int(sec % 60)
-    return f"{h:02d}:{m:02d}:{s:02d}"
+def merge_segments(segments):
 
+    log("Segmenten mergen...")
 
-
-DISCLAIMER_TRANSCRIPTIE = (
-    "Deze transcriptie is automatisch gegenereerd door Raadslens en kan fouten bevatten. "
-    "Raadslens is niet verantwoordelijk voor de inhoud van de vergadering of de "
-    "nauwkeurigheid van de transcriptie. De officiële verslaggeving is te vinden op "
-    "texel.bestuurlijkeinformatie.nl."
-)
-
-
-def build_transcript(segments, speakers, data, date_str):
-    lines = []
-    lines.append("RAADSVERGADERING TEXEL")
-    lines.append(date_str)
-    lines.append("=" * 60)
-    lines.append("")
-    lines.append(f"[ {DISCLAIMER_TRANSCRIPTIE} ]")
-    lines.append("")
-
-    topics = data.get("topics", []) if data else []
-    if topics:
-        lines.append("AGENDA")
-        lines.append("-" * 30)
-        for t in topics:
-            lines.append(f"  {t.get('title', '')}")
-        lines.append("")
-        lines.append("=" * 60)
-        lines.append("")
-
-    lines.append("TRANSCRIPTIE")
-    lines.append("-" * 30)
-    lines.append("")
-
-    current_speaker = None
-    current_block = []
-    current_start = None
+    merged = []
 
     for seg in segments:
-        speaker = find_speaker_at(seg["start"], speakers) if speakers else None
-        text = seg["text"]
 
-        if speaker != current_speaker or (speaker is None and len(current_block) > 20):
-            if current_block and current_start is not None:
-                ts = format_timestamp(current_start)
-                label = f" {current_speaker.upper()}" if current_speaker else ""
-                lines.append(f"[{ts}]{label}")
-                lines.append(" ".join(current_block))
-                lines.append("")
-            if speaker != current_speaker:
-                current_speaker = speaker
-            current_block = [text]
-            current_start = seg["start"]
+        if not merged:
+            merged.append(seg)
+            continue
+
+        last = merged[-1]
+
+        gap = seg["start"] - last["end"]
+
+        if gap < 1.5:
+            last["end"] = seg["end"]
+            last["text"] += " " + seg["text"]
         else:
-            current_block.append(text)
+            merged.append(seg)
 
-    if current_block and current_start is not None:
-        ts = format_timestamp(current_start)
-        label = f" {current_speaker.upper()}" if current_speaker else ""
-        lines.append(f"[{ts}]{label}")
-        lines.append(" ".join(current_block))
-        lines.append("")
+    log(f"Na merge: {len(merged)} segmenten")
 
-    return "\n".join(lines)
+    return merged
 
 
-def upload_transcript_to_release(date_id, transcript_text):
-    if not GITHUB_TOKEN or not REPO:
-        return None
-    url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-    }
-    req = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            release = json.loads(resp.read())
-    except Exception as e:
-        log(f"Release niet gevonden: {e}")
-        return None
+def transcribe_audio(audio_file, vocabulary):
 
-    upload_url = release["upload_url"].replace("{?name,label}", "")
-    filename = f"{date_id}_transcriptie.txt"
-    upload_headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "text/plain",
-    }
-    req = urllib.request.Request(
-        f"{upload_url}?name={filename}",
-        data=transcript_text.encode("utf-8"),
-        headers=upload_headers,
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            asset = json.loads(resp.read())
-            log(f"Transcriptie geüpload: {asset['browser_download_url']}")
-            return asset["browser_download_url"]
-    except Exception as e:
-        log(f"Upload fout: {e}")
-        return None
+    log("Transcriptie starten (parallel chunk engine)...")
+
+    audio_file = normalize_audio(audio_file)
+
+    chunks = split_audio(audio_file)
+
+    args = [(c, offset, vocabulary) for c, offset in chunks]
+
+    all_segments = []
+
+    with concurrent.futures.ProcessPoolExecutor(
+        max_workers=PARALLEL_WORKERS
+    ) as executor:
+
+        futures = executor.map(transcribe_chunk, args)
+
+        for res in futures:
+            all_segments.extend(res)
+
+    log(f"Totaal segmenten: {len(all_segments)}")
+
+    all_segments = sorted(all_segments, key=lambda x: x["start"])
+
+    all_segments = merge_segments(all_segments)
+
+    log(f"Eindsegmenten: {len(all_segments)}")
+
+    return all_segments
 
 
 # ============================================================
