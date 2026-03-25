@@ -50,6 +50,7 @@ CORRECTIES = {
     "Tesla-rebuest": "Texelse",
     "Schiemonenkoog": "Schiermonnikoog",
     "Schiemelde Kog": "Schiermonnikoog",
+    "Schiemelde Koog": "Schiermonnikoog",
     "Schiemelde Kooge": "Schiermonnikoog",
     "Schimmonenkoog": "Schiermonnikoog",
     "Schirmelenkoog": "Schiermonnikoog",
@@ -59,40 +60,70 @@ CORRECTIES = {
     "Wadderijlanden": "Waddeneilanden",
     "Wadderijland": "Waddeneiland",
     "Wadde dijk": "Waddendijk",
+    "Waddedijk": "Waddendijk",
     "Noord-Wolland-Noord": "Noord-Holland-Noord",
     "Noordeland Noord": "Noord-Holland Noord",
     "Dijken-Tessel": "Dijken Texel",
+    "de Burgs-Zuid": "Den Burg Zuid",
+    "den Burksuit": "Den Burg Zuid",
+    "Den Burksuit": "Den Burg Zuid",
 
-    # Namen
+    # Namen personen
     "Herkoles": "Hercules",
     "Herkler": "Hercules",
     "Herklus": "Hercules",
     "Herkles": "Hercules",
     "Hartvertesel": "Hart voor Texel",
+    "Hartford-Texel": "Hart voor Texel",
     "Kormann": "Kooiman",
     "Kuiman": "Kooiman",
+    "Koerman": "Kooiman",
+    "Huiferman": "Huisman",
+    "Huiflom": "Huisman",
     "Zweijer": "Soyer",
     "Swajain": "Soyer",
     "Svallier": "Soyer",
     "Svaljei": "Soyer",
     "Swaye": "Soyer",
     "Zaier": "Soyer",
+    "Swajee": "Soyer",
+    "Saillet": "Soyer",
     "De Ros": "Dros",
     "Hogeheide": "Hoogerheide",
     "Hoogheide": "Hoogerheide",
     "Hoogharde": "Hoogerheide",
     "Holgaarden": "Hoogerheide",
     "Oogheide": "Hoogerheide",
-    "Huiflom": "Huisman",
-    "Gerand": "Rand",
     "van der Belth": "van de Belt",
+    "Gerand": "Rand",
 
-    # Begrippen
+    # Aanspreekvormen
+    "m'n vrouw van de Betering": "mevrouw Van de Wetering",
+    "m'n vrouw van de Wetering": "mevrouw Van de Wetering",
+    "m'n vrouw Koot": "mevrouw Koot",
+    "m'n vrouw Teros": "mevrouw Dros",
+    "m'n vrouw Dros": "mevrouw Dros",
+    "m'n vrouw Visser": "mevrouw Visser",
+    "Gaat u gewoon": "Gaat uw gang",
+    "gaat u gewoon": "gaat uw gang",
+
+    # Namen verenigingen/organisaties
+    "Jews": "Deuce",
     "Juice": "Deuce",
+    "Jewish Tennis en Padel": "Deuce Tennis en Padel",
+    "Juice Tennis en Padel": "Deuce Tennis en Padel",
+    "Inzet for Jews": "Inzet voor Deuce",
+    "protestus": "pro Texel",
+    "bataillen": "partijen",
+
+    # Begrippen politiek/bestuur
     "Sientwijs": "Zienswijze",
     "synswijze": "zienswijze",
     "zinswijze": "zienswijze",
+    "sceneswijze": "zienswijze",
+    "siendwijze": "zienswijze",
     "Kaaldernota": "Kadernota",
+    "Kadernoot": "Kadernota",
     "kadelnota": "kadernota",
     "Kiescompass": "Kieskompas",
     "watkabel": "Wadkabel",
@@ -100,21 +131,30 @@ CORRECTIES = {
     "Gaantafel": "Ga aan tafel",
     "volwaden": "voorwaarden",
     "vrij blijvond": "vrijblijvend",
+    "vrij blij vond": "vrijblijvend",
     "vrijblijventijd": "vrijblijvendheid",
+    "vrij blijfond": "vrijblijvend",
     "amitieuzer": "ambitieuzer",
     "energie-congrestie": "energiecongestie",
     "dijkversvaringstraject": "dijkversterkingstraject",
     "dijkversvaringen": "dijkversterkingen",
+    "dijkversvaring": "dijkversterking",
     "tusserappertage": "tussenrapportage",
     "handhavenkantie": "handhavingsstrategie",
     "raastvergadering": "raadsvergadering",
+    "razegadering": "raadsvergadering",
     "raastraan": "raad zijn",
+    "razeperiode": "raadsperiode",
+    "razen": "raad",
     "portafiljouder": "portefeuillehouder",
+    "portafiljouwer": "portefeuillehouder",
     "portafouder": "portefeuillehouder",
     "portevaar": "portefeuillehouder",
     "sloopvormaalige": "sloop voormalige",
+    "sloopvormalige": "sloop voormalige",
     "korthalde": "karthal De",
     "pipowagos": "pipowagens",
+    "pipowagas": "pipowagens",
     "fjordtrekkers": "shorttrackers",
     "lepenlaar": "lepelaar",
     "invandalisatie": "inventarisatie",
@@ -125,7 +165,16 @@ CORRECTIES = {
     "gepedeld": "gepaddeld",
     "het swoort": "enzovoort",
     "Vriesland": "Friesland",
+    "gastmengels": "grasmengsels",
+    "honderder": "honderden",
+    "signalaf": "signaal af",
+    "omgevingstienst": "omgevingsdienst",
+    "raadsreporteurs": "raadsrapporteurs",
+    "surfvisies": "zorgvisies",
+    "creditregistratie": "schuldenregistratie",
 }
+
+# Achternamen die zeker kloppen
 
 # Achternamen die zeker kloppen uit het officiële proces-verbaal
 ACHTERNAMEN_TEXEL = [
@@ -165,32 +214,66 @@ ACHTERNAMEN_TEXEL = [
 
 # Vaste begrippen
 VASTE_BEGRIPPEN = [
+    # Dorpen en gebieden
     "Texel", "Texels", "Texelaar", "Texelaars",
     "Den Burg", "De Koog", "De Cocksdorp", "Oosterend", "Oudeschild",
-    "De Waal", "Midsland", "De Westereen", "Eijerland",
+    "De Waal", "Midsland", "Den Hoorn", "De Westereen", "Eijerland",
+    "Noorderhaaks", "Kogerstrand", "Paal 17", "Paal 12", "Paal 15",
     "Waddeneilanden", "Waddenzee", "Schiermonnikoog", "Vlieland",
-    "Terschelling", "Ameland", "TESO", "Marsdiep", "Slufter",
-    "Deuce", "Deuce Tennis", "padelbanen", "padelvereniging",
+    "Terschelling", "Ameland", "TESO", "Marsdiep", "Slufter", "Muy",
+
+    # Straatnamen Den Burg en omgeving
+    "Emmalaan", "Kogerstraat", "Bernhardlaan", "Gasthuisstraat",
+    "Beatrixlaan", "Ruyterstraat", "Marsweg", "Mienterglop",
+    "Pontweg", "Haffelderweg", "Postweg", "Hoofdweg", "Warmoesstraat",
+    "Molenstraat", "Mulderstraat", "Wintergroen",
+
+    # Sportverenigingen
+    "Deuce", "TV Deuce", "Deuce Tennis en Padel", "Tennisvereniging Deuce",
+    "Sportpark Den Burg Zuid", "Sportpark Zuid",
+    "VV Texel", "Texel 94", "SV Oosterend", "SVC De Cocksdorp",
+    "Atletiekvereniging Texel", "AV Texel",
+    "Sportstichting Texel", "Texelse Reddingsbrigade", "KNRM",
+    "USW", "Utrechtsch Studenten Werkkamp",
+    "Heri Hodie", "Tennisvereniging Oosterend",
+
+    # Maatschappelijke organisaties
+    "Woontij", "Huis van Ontwikkeling", "Thijssehuis",
+    "Bewonersvereniging Texel", "Stichting Regiodeal",
+    "Texelse Courant", "Radio Texel",
+    "Staatsbosbeheer", "Rijkswaterstaat",
+    "Hoogheemraadschap Hollands Noorderkwartier",
+
+    # Bestuurlijk en politiek
     "gemeenteraad", "raadsvergadering", "raadslid", "wethouder",
     "burgemeester", "griffier", "college van B en W",
     "raadsbesluit", "amendement", "zienswijze", "kadernota",
     "coalitieakkoord", "hamerstuk", "bespreekstuk", "motie",
     "initiatiefvoorstel", "reglement van orde", "portefeuillehouder",
-    "Texels Belang", "GroenLinks", "Hart voor Texel",
+    "raadsrapporteur", "Reglement van Orde",
+    "Texels Belang", "GroenLinks", "Hart voor Texel", "PvdA pro Texel",
+
+    # Gemeenschappelijke regelingen en instanties
     "Omgevingsdienst Noord-Holland Noord", "ODNHN",
     "Veiligheidsregio Noord-Holland Noord", "GGD Hollands Noorden",
     "Regionaal Historisch Centrum Alkmaar", "RHCA",
     "Regionale Raadscommissie Noordkop", "RRN",
-    "toeristenbelasting", "bestemmingsplan", "omgevingsvisie",
-    "woningbouwprogramma", "klimaatadaptatieplan", "energietransitie",
-    "Stappeland", "karthal", "vuurwerkverbod", "kustverdediging",
-    "dijknormering", "waterveiligheid", "waddengebied",
-    "Wadkabel", "energiecongestie", "dijkversterking",
-    "Kieskompas", "tussenrapportage", "inventarisatie",
-    "Woontij", "Staatsbosbeheer", "Rijkswaterstaat",
     "Hoogheemraadschap Hollands Noorderkwartier",
-    "Mienterglop", "Thijssehuis", "Stappeland", "Marsweg",
-    "Sportpark Den Burg Zuid",
+    "Wetterskip Fryslân",
+
+    # Beleidsdocumenten en projecten
+    "toeristenbelasting", "bestemmingsplan", "omgevingsvisie",
+    "omgevingsplan", "woningbouwprogramma", "klimaatadaptatieplan",
+    "energietransitie", "energiecongestie", "Wadkabel",
+    "Stappeland", "karthal", "vuurwerkverbod", "kustverdediging",
+    "dijknormering", "dijkversterking", "waterveiligheid", "waddengebied",
+    "Kieskompas", "tussenrapportage", "inventarisatie",
+    "Texels Toekomstplan", "Woonvisie Texel",
+    "Berendschotrapport", "Berendschotonderzoek",
+    "Texelse Halve Marathon", "Kidsrun",
+    "Inwonersberaad", "Gezondheidscluster",
+    "Mobiliteitsprogramma Texel", "Integrale Waterveiligheidsstrategie",
+    "Huisvestingsverordening", "Perspectiefnota",
 ]
 
 
@@ -278,28 +361,29 @@ def fetch_ondertiteling_van_vergadering(agenda_id):
         with urllib.request.urlopen(req, timeout=15) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
 
-        # Zoek naar ondertiteling document
-        matches = re.findall(
-            r'/Agenda/Document/' + agenda_id + r'\?documentId=([a-f0-9-]{36})',
-            html
-        )
-        # Zoek ook naar "ondertiteling" in tekst nabij document links
+        # Zoek alle document-links
+        alle_doc_ids = re.findall(r'documentId=([a-f0-9-]{36})', html)
+
+        # Zoek specifiek ondertiteling-links
         ondertiteling_ids = []
-        for m in re.finditer(r'[Oo]ndertiteling[^"]*"[^"]*documentId=([a-f0-9-]{36})', html):
+        for m in re.finditer(r'[Oo]ndertiteling.{0,200}?documentId=([a-f0-9-]{36})', html, re.DOTALL):
             ondertiteling_ids.append(m.group(1))
+        for m in re.finditer(r'documentId=([a-f0-9-]{36}).{0,200}?[Oo]ndertiteling', html, re.DOTALL):
+            if m.group(1) not in ondertiteling_ids:
+                ondertiteling_ids.append(m.group(1))
 
-        if not ondertiteling_ids and matches:
-            # Fallback: pak alle documenten en filter later
-            return None
+        # Gebruik ondertiteling-IDs of val terug op alle docs
+        te_proberen = ondertiteling_ids[:2] or alle_doc_ids[:5]
 
-        for doc_id in ondertiteling_ids[:1]:
+        for doc_id in te_proberen:
             pdf_url = f"{IBABS_BASE}/Agenda/Document/{agenda_id}?documentId={doc_id}"
             try:
                 req2 = urllib.request.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req2, timeout=15) as resp2:
                     content_type = resp2.headers.get("Content-Type", "")
-                    if "pdf" in content_type.lower():
-                        return resp2.read()
+                    data = resp2.read()
+                    if "pdf" in content_type.lower() or data[:4] == b'%PDF':
+                        return data
             except Exception:
                 pass
         return None
@@ -561,6 +645,12 @@ def maak_github_issue(date_id, date_str, twijfels, transcript_url=None):
 
 def pas_correcties_toe(tekst):
     """Pas de correctielijst toe op de transcriptietekst."""
+    # Puntjes opruimen - Whisper gebruikt ... als pauze-markering
+    tekst = re.sub(r'\s*\.\.\.\s*\.\.\.\s*', ' ', tekst)  # ... ... -> spatie
+    tekst = re.sub(r'\s*\.\.\.\s*', ' ', tekst)            # ... -> spatie
+    tekst = re.sub(r' {2,}', ' ', tekst)                   # dubbele spaties opruimen
+    tekst = tekst.strip()
+
     for fout, goed in CORRECTIES.items():
         # Case-insensitive maar behoud hoofdletter aan begin van zin
         tekst = re.sub(
