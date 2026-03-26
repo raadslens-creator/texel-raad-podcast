@@ -34,6 +34,7 @@ jobs:
       - name: Dependencies installeren
         run: |
           pip install mutagen yt-dlp
+          sudo apt-get update
           sudo apt-get install -y ffmpeg --fix-missing
 
       - name: Vergadering ophalen
