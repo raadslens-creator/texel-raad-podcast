@@ -360,6 +360,84 @@ CORRECTIES = {
     "dictum": "dictum",
 }
 
+# Gemeente-specifieke correcties
+CORRECTIES_HOLLANDS_KROON = {
+    # Plaatsnamen en gebieden
+    "Hollandse Kroon": "Hollands Kroon",
+    "Hollandskroon": "Hollands Kroon",
+    "Anna Paulowne": "Anna Paulowna",
+    "Wieringerweer": "Wieringerwerf",
+    "Wieringerwaard": "Wieringerwerf",
+    "Middenmeer": "Middenmeer",
+    "Nieuwe Niedorp": "Nieuwe Niedorp",
+    "Den Oever": "Den Oever",
+    "Hippolytushoef": "Hippolytushoef",
+    "Slootdorp": "Slootdorp",
+    "Winkel": "Winkel",
+    "Kolhorn": "Kolhorn",
+    "Lutjewinkel": "Lutjewinkel",
+    "Westerland": "Westerland",
+
+    # Namen raadsleden en bestuurders
+    "Roeska": "Borst-Koorn",
+    "Heather": "De Herder",
+    "Büggel": "Bügel",
+    "Bugel": "Bügel",
+    "Slootweg": "Slootweg",
+    "Meeldijk": "Meeldijk",
+    "Pankras": "Pankras",
+    "Pronk": "Pronk-Heisen",
+    "Dijkshoorn": "Dijkshoorn",
+    "Laan-Olij": "Laan-Olij",
+    "Van der Klugt": "van der Klugt",
+    "Van Lierop": "van Lierop",
+    "Reginald Visser": "Reginald Visser",
+    "Boersen": "Boersen",
+    "Hruska": "Hruska",
+    "Buczynski": "Buczynski",
+    "De Git": "de Git",
+    "Blokker": "Blokker",
+    "Meskers": "Meskers",
+    "Gameren": "van Gameren",
+    "Poortman": "Poortman",
+
+    # Politieke partijen
+    "OHK": "Onafhankelijk Hollands Kroon",
+    "Onafhankelijk Hollandse Kroon": "Onafhankelijk Hollands Kroon",
+    "Senioren HK": "Senioren Hollands Kroon",
+    "SHK": "Senioren Hollands Kroon",
+    "LADA": "LADA&Anders!",
+    "LDA": "Lokaal Democratisch Alternatief",
+    "LEV": "LEV! Hollands Kroon",
+    "Forum voor Democratie": "Forum voor Democratie",
+    "FvD": "Forum voor Democratie",
+
+    # Begrippen lokaal
+    "vorkensrichtingen": "voorkeursrichtingen",
+    "beinwoners": "bewoners",
+    "omgevingsdrieze": "omgevingsvisie",
+    "omgevingsvisies": "omgevingsvisie",
+    "gewasbestremingsmiddelen": "gewasbeschermingsmiddelen",
+    "gewasbescheringsmiddelen": "gewasbeschermingsmiddelen",
+    "artmigranten": "arbeidsmigranten",
+    "onontbierlijk": "onontbeerlijk",
+    "amanderen": "amenderen",
+    "aangehood": "aangehouden",
+    "krekenstructuur": "krekenstructuur",
+    "nedezettingen": "nederzettingen",
+    "brede welvaartskade": "brede welvaartskader",
+    "welvaartskade": "welvaartskader",
+    "paternalisme": "paternalisme",
+    "omgevingsdrieze": "omgevingsvisie",
+    "bedrijfigheid": "bedrijvigheid",
+    "recreatiemolgekeken": "recreatiemogelijkheden",
+    "molgekeken": "mogelijkheden",
+    "amanderen": "amenderen",
+    "erfpacht": "erfpacht",
+    "Omgevingsplan": "omgevingsplan",
+    "Omgevingsvisie": "omgevingsvisie",
+}
+
 # Achternamen die zeker kloppen
 
 # Achternamen die zeker kloppen uit het officiële proces-verbaal
@@ -396,6 +474,117 @@ ACHTERNAMEN_TEXEL = [
     "Overbeeke", "Adema", "Hoven", "Hilhorst", "Geurtz", "Cremers", "Dijksen",
     # Bestuur
     "Pol",
+]
+
+# ============================================================
+# GEMEENTE-SPECIFIEKE CORRECTIES EN NAMEN
+# ============================================================
+
+CORRECTIES_HOLLANDS_KROON = {
+    # Plaatsnamen gemeente Hollands Kroon
+    "Anna Paulowna": "Anna Paulowna",
+    "Wieringerwerf": "Wieringerwerf",
+    "Wieringermeer": "Wieringermeer",
+    "Middenmeer": "Middenmeer",
+    "Slootdorp": "Slootdorp",
+    "Breezand": "Breezand",
+    "Kolhorn": "Kolhorn",
+    "Lutjewinkel": "Lutjewinkel",
+    "Winkel": "Winkel",
+    "Nieuwe Niedorp": "Nieuwe Niedorp",
+    "Oude Niedorp": "Oude Niedorp",
+    "Niedorp": "Niedorp",
+    "Wieringen": "Wieringen",
+    "Den Oever": "Den Oever",
+    "Hippolytushoef": "Hippolytushoef",
+    "Westerland": "Westerland",
+    "Kroondomein": "Kroondomein",
+    "Hollands Kroon": "Hollands Kroon",
+    "Noordkop": "Noordkop",
+
+    # Namen raadsleden en bestuur (Hollands Kroon 2022-2026)
+    "Heather": "Bügel",
+    "Roeska": "Borst-Koorn",
+    "Boerka": "Borst-Koorn",
+    "Pankras": "Pankras",
+    "Meeldijk": "Meeldijk",
+    "Slootweg": "Slootweg",
+    "Poortman": "Poortman",
+    "Dijkshoorn": "Dijkshoorn",
+    "Laan-Olij": "Laan-Olij",
+    "van Lierop": "van Lierop",
+    "Boersen": "Boersen",
+    "Hruska": "Hruska",
+    "Pankras": "Pankras",
+    "Pronk": "Pronk-Heisen",
+    "de Herder": "de Herder",
+    "Philipsen": "Philipsen",
+    "Blokker": "Blokker",
+    "Thomasse": "Thomasse",
+    "Buczynski": "Buczynski",
+    "Medema": "Medema",
+    "de Gee": "de Gee",
+    "de Git": "de Git",
+    "van Gameren": "van Gameren",
+    "Sijbenga": "Sijbenga",
+    "Braak": "Braak-van den Blink",
+    "Versluis": "Versluis",
+    "van Dam": "van Dam",
+
+    # Partijnamen
+    "OHK": "OHK",
+    "SHK": "SHK",
+    "LDA": "LDA",
+    "LADA": "LADA&Anders!",
+    "LEV": "LEV!",
+
+    # Begrippen / veel voorkomende fouten
+    "vorkensrichtingen": "voorkeursrichtingen",
+    "aangehood": "aangeknoopt",
+    "beinwoners": "bewoners",
+    "omgevingsdrieze": "omgevingsvisie",
+    "gewasbestremingsmiddelen": "gewasbeschermingsmiddelen",
+    "artmigranten": "arbeidsmigranten",
+    "onontbierlijk": "onontbeerlijk",
+    "amanderen": "amenderen",
+    "amandement": "amendement",
+    "amandement": "amendement",
+    "watkabel": "Wadkabel",
+    "omgevingsdrieze": "omgevingsvisie",
+    "krekenstructuur": "krekenstructuur",
+    "nedezettingen": "nederzettingen",
+    "brede welvaartskade": "brede welvaartskader",
+    "omgevingsvisies": "omgevingsvisie",
+    "verduurzamen": "verduurzamen",
+    "bedrijfigheid": "bedrijvigheid",
+    "gewasbescherming": "gewasbescherming",
+    "chemische gewasbestremingsmiddelen": "chemische gewasbeschermingsmiddelen",
+}
+
+ACHTERNAMEN_HOLLANDS_KROON = [
+    # OHK
+    "Bügel", "de Jong", "Leever", "Meeldijk", "Slootweg", "de Vries",
+    "Poortman", "Groot",
+    # CDA
+    "van der Klugt", "Dijkshoorn", "Laan-Olij", "van Lierop", "Visser",
+    # VVD
+    "Borst-Koorn", "Boersen", "Hruska",
+    # Senioren HK
+    "Pankras", "Pronk-Heisen", "de Herder", "Philipsen",
+    # GroenLinks
+    "Blokker", "Thomasse",
+    # PvdA
+    "Buczynski", "Medema",
+    # D66
+    "de Gee", "de Git",
+    # LDA
+    "van Gameren",
+    # LADA
+    "Sijbenga-den Outenaar",
+    # LEV!
+    "Braak-van den Blink",
+    # Bestuur
+    "van Dam", "Versluis", "van Gent",
 ]
 
 # Vaste begrippen
@@ -659,13 +848,43 @@ def update_vocabulary_uit_ondertitelingen(vocab_cache, max_vergaderingen=10):
     return vocab_cache
 
 
+ACHTERNAMEN_HOLLANDS_KROON = [
+    # Onafhankelijk Hollands Kroon (OHK)
+    "Bügel", "Groot", "Slootweg", "de Vries", "de Jong", "Leever",
+    "Meeldijk", "Poortman",
+    # CDA
+    "van der Klugt", "Dijkshoorn", "Laan-Olij", "van Lierop", "Visser",
+    # VVD
+    "Borst-Koorn", "Boersen", "Hruska", "Meskers",
+    # Senioren HK
+    "Pankras", "Pronk-Heisen", "de Herder",
+    # GroenLinks
+    "Blokker", "Thomasse",
+    # PvdA
+    "Buczynski", "Sijbenga-van den Outenaar",
+    # D66
+    "de Git",
+    # LDA
+    "van Gameren",
+    # LADA&Anders!
+    "Nouwens",
+    # LEV!
+    "Philipsen",
+    # Burgemeester / voorzitter
+    "van Dam", "Bügel", "de Lange",
+]
+
 # ============================================================
 # VOCABULARY BUILDER
 # ============================================================
 
 def build_vocabulary(namen_cache, vocab_cache):
     """Bouw volledige vocabulary op voor Whisper."""
-    namen = list(VASTE_BEGRIPPEN) + list(ACHTERNAMEN_TEXEL)
+    # Gemeente-specifieke namen gebruiken
+    if GEMEENTE_ID == "hollandskroon":
+        namen = list(VASTE_BEGRIPPEN) + list(ACHTERNAMEN_HOLLANDS_KROON)
+    else:
+        namen = list(VASTE_BEGRIPPEN) + list(ACHTERNAMEN_TEXEL)
 
     # Volledige namen uit cache
     for volledige_naam in namen_cache.values():
@@ -837,7 +1056,12 @@ def pas_correcties_toe(tekst):
     tekst = re.sub(r' {2,}', ' ', tekst)                   # dubbele spaties opruimen
     tekst = tekst.strip()
 
-    for fout, goed in CORRECTIES.items():
+    # Combineer algemene en gemeente-specifieke correcties
+    alle_correcties = dict(CORRECTIES)
+    if GEMEENTE_ID == "hollandskroon":
+        alle_correcties.update(CORRECTIES_HOLLANDS_KROON)
+
+    for fout, goed in alle_correcties.items():
         # Case-insensitive maar behoud hoofdletter aan begin van zin
         tekst = re.sub(
             r'\b' + re.escape(fout) + r'\b',
