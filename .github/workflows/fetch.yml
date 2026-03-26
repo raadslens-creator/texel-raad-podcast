@@ -1,9 +1,18 @@
-name: Fetch Raadsvergadering
+name: Fetch Vergadering
 
 on:
   schedule:
-    - cron: "0 1 * * 2,3,4"
+    - cron: "0 1 * * *"
   workflow_dispatch:
+    inputs:
+      gemeente:
+        description: "Gemeente ID (leeg = alle gemeenten)"
+        required: false
+        default: ""
+      date_ids:
+        description: "Komma-gescheiden date_ids (bijv. 20260219_1,20260217_1)"
+        required: false
+        default: ""
 
 jobs:
   fetch:
@@ -22,22 +31,47 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: yt-dlp en ffmpeg installeren
+      - name: Dependencies installeren
         run: |
-          pip install yt-dlp
-          sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y ffmpeg --fix-missing
+          pip install mutagen yt-dlp
+          sudo apt-get install -y ffmpeg
 
       - name: Vergadering ophalen
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python fetch_vergadering.py
+        run: |
+          GEMEENTE="${{ github.event.inputs.gemeente }}"
+          DATE_IDS="${{ github.event.inputs.date_ids }}"
+          if [ -n "$GEMEENTE" ] && [ -n "$DATE_IDS" ]; then
+            python fetch_vergadering.py "$GEMEENTE" "$DATE_IDS"
+          elif [ -n "$GEMEENTE" ]; then
+            python fetch_vergadering.py "$GEMEENTE"
+          else
+            python fetch_vergadering.py
+          fi
 
-      - name: RSS-feed committen
+      - name: Wijzigingen committen
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/feed.xml docs/seen.json || true
-          git diff --staged --quiet || git commit -m "RSS-feed bijgewerkt [skip ci]"
-          git push
+          git add docs/ || true
+          git diff --staged --quiet || git commit -m "Vergadering(en) toegevoegd [skip ci]"
+          git pull --rebase && git push
+
+      - name: Transcriptie triggeren
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'transcribe.yml',
+              ref: 'main',
+              inputs: {
+                gemeente: '${{ github.event.inputs.gemeente }}',
+                date_ids: '${{ github.event.inputs.date_ids }}'
+              }
+            })

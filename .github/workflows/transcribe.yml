@@ -1,23 +1,27 @@
 name: Transcribeer Vergadering
 
 on:
-  workflow_run:
-    workflows: ["Fetch Raadsvergadering"]
-    types:
-      - completed
   workflow_dispatch:
     inputs:
-      date_id:
-        description: "Vergadering ID (bijv. 20260323_1)"
+      gemeente:
+        description: "Gemeente ID (bijv. texel of hollandskroon)"
         required: false
+        default: "texel"
+      date_id:
+        description: "Specifieke vergadering (bijv. 20260218_1), leeg = laatste"
+        required: false
+        default: ""
+      date_ids:
+        description: "Meerdere vergaderingen komma-gescheiden (voor backfill)"
+        required: false
+        default: ""
 
 jobs:
   transcribe:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    # Alleen draaien als de fetch workflow succesvol was
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+      issues: write
 
     steps:
       - name: Checkout repo
@@ -32,21 +36,36 @@ jobs:
 
       - name: Dependencies installeren
         run: |
-          pip install faster-whisper requests mutagen
-          sudo apt-get update -o Acquire::Retries=3
-          sudo apt-get install -y ffmpeg --fix-missing
+          pip install faster-whisper
+          sudo apt-get install -y ffmpeg
 
-      - name: Transcriberen
+      - name: Transcriberen (enkelvoudig)
+        if: ${{ github.event.inputs.date_ids == '' }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           DATE_ID: ${{ github.event.inputs.date_id }}
+          GEMEENTE_ID: ${{ github.event.inputs.gemeente }}
         run: python transcribe_vergadering.py
 
-      - name: Transcripties committen
+      - name: Transcriberen (meerdere - backfill)
+        if: ${{ github.event.inputs.date_ids != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GEMEENTE_ID: ${{ github.event.inputs.gemeente }}
+        run: |
+          IFS=',' read -ra IDS <<< "${{ github.event.inputs.date_ids }}"
+          for id in "${IDS[@]}"; do
+            id=$(echo "$id" | xargs)
+            echo "=== Transcriberen: $id ==="
+            DATE_ID="$id" python transcribe_vergadering.py
+          done
+
+      - name: Wijzigingen committen
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/transcripties/ || true
-          git diff --staged --quiet || git commit -m "Transcriptie toegevoegd [skip ci]"
+          git add docs/ || true
+          git diff --staged --quiet || git commit -m "Transcriptie(s) toegevoegd [skip ci]"
           git pull --rebase && git push

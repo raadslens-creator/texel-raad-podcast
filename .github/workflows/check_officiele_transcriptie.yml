@@ -2,9 +2,13 @@ name: Check Officiële Transcriptie
 
 on:
   schedule:
-    # Elke dag om 06:00 UTC (= 08:00 Nederlandse tijd)
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      gemeente:
+        description: "Gemeente ID (leeg = alle gemeenten)"
+        required: false
+        default: ""
 
 jobs:
   check:
@@ -26,13 +30,31 @@ jobs:
       - name: Dependencies installeren
         run: pip install pdfminer.six requests
 
-      - name: Officiële transcripties checken
-        run: python check_officiele_transcriptie.py
+      - name: Check uitvoeren
+        env:
+          GEMEENTE_ID: ${{ github.event.inputs.gemeente }}
+        run: |
+          if [ -z "$GEMEENTE_ID" ]; then
+            # Alle actieve gemeenten draaien
+            python3 -c "
+import json
+from pathlib import Path
+config = json.loads(Path('gemeenten.json').read_text())
+for g in config['gemeenten']:
+    if g.get('actief', True):
+        print(g['id'])
+" | while read gemeente_id; do
+              echo "=== Check: $gemeente_id ==="
+              GEMEENTE_ID="$gemeente_id" python check_officiele_transcriptie.py
+            done
+          else
+            python check_officiele_transcriptie.py
+          fi
 
       - name: Wijzigingen committen
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/transcripties/ || true
+          git add docs/ || true
           git diff --staged --quiet || git commit -m "Officiële transcriptie(s) bijgewerkt [skip ci]"
           git pull --rebase && git push
