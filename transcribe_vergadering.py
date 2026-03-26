@@ -358,87 +358,51 @@ CORRECTIES = {
     "ditum": "dictum",
     "deektum": "dictum",
     "dictum": "dictum",
-}
 
-# Gemeente-specifieke correcties
-CORRECTIES_HOLLANDS_KROON = {
-    # Plaatsnamen en gebieden
-    "Hollandse Kroon": "Hollands Kroon",
-    "Hollandskroon": "Hollands Kroon",
-    "Anna Paulowne": "Anna Paulowna",
-    "Wieringerweer": "Wieringerwerf",
-    "Wieringerwaard": "Wieringerwerf",
-    "Middenmeer": "Middenmeer",
-    "Nieuwe Niedorp": "Nieuwe Niedorp",
-    "Den Oever": "Den Oever",
-    "Hippolytushoef": "Hippolytushoef",
-    "Slootdorp": "Slootdorp",
-    "Winkel": "Winkel",
-    "Kolhorn": "Kolhorn",
-    "Lutjewinkel": "Lutjewinkel",
-    "Westerland": "Westerland",
-
-    # Namen raadsleden en bestuurders
-    "Roeska": "Borst-Koorn",
-    "Heather": "De Herder",
-    "Büggel": "Bügel",
-    "Bugel": "Bügel",
-    "Slootweg": "Slootweg",
-    "Meeldijk": "Meeldijk",
-    "Pankras": "Pankras",
-    "Pronk": "Pronk-Heisen",
-    "Dijkshoorn": "Dijkshoorn",
-    "Laan-Olij": "Laan-Olij",
-    "Van der Klugt": "van der Klugt",
-    "Van Lierop": "van Lierop",
-    "Reginald Visser": "Reginald Visser",
-    "Boersen": "Boersen",
-    "Hruska": "Hruska",
-    "Buczynski": "Buczynski",
-    "De Git": "de Git",
-    "Blokker": "Blokker",
-    "Meskers": "Meskers",
-    "Gameren": "van Gameren",
-    "Poortman": "Poortman",
-
-    # Politieke partijen
-    "OHK": "Onafhankelijk Hollands Kroon",
-    "Onafhankelijk Hollandse Kroon": "Onafhankelijk Hollands Kroon",
-    "Senioren HK": "Senioren Hollands Kroon",
-    "SHK": "Senioren Hollands Kroon",
-    "LADA": "LADA&Anders!",
-    "LDA": "Lokaal Democratisch Alternatief",
-    "LEV": "LEV! Hollands Kroon",
-    "Forum voor Democratie": "Forum voor Democratie",
-    "FvD": "Forum voor Democratie",
-
-    # Begrippen lokaal
+    # Universele begrippen (gelden voor alle gemeenten)
     "vorkensrichtingen": "voorkeursrichtingen",
     "beinwoners": "bewoners",
     "omgevingsdrieze": "omgevingsvisie",
-    "omgevingsvisies": "omgevingsvisie",
     "gewasbestremingsmiddelen": "gewasbeschermingsmiddelen",
     "gewasbescheringsmiddelen": "gewasbeschermingsmiddelen",
     "artmigranten": "arbeidsmigranten",
     "onontbierlijk": "onontbeerlijk",
     "amanderen": "amenderen",
-    "aangehood": "aangehouden",
-    "krekenstructuur": "krekenstructuur",
+    "amandement": "amendement",
     "nedezettingen": "nederzettingen",
-    "brede welvaartskade": "brede welvaartskader",
     "welvaartskade": "welvaartskader",
-    "paternalisme": "paternalisme",
-    "omgevingsdrieze": "omgevingsvisie",
+    "brede welvaartskade": "brede welvaartskader",
     "bedrijfigheid": "bedrijvigheid",
+    "recreatiemolgekeerd": "recreatiemogelijkheden",
     "recreatiemolgekeken": "recreatiemogelijkheden",
     "molgekeken": "mogelijkheden",
-    "amanderen": "amenderen",
-    "erfpacht": "erfpacht",
-    "Omgevingsplan": "omgevingsplan",
-    "Omgevingsvisie": "omgevingsvisie",
+    "molgekeerde": "mogelijkheden",
+    "substanciel": "substantieel",
+    "onontwierlijk": "onontbeerlijk",
+    "agraële": "agrarische",
+    "agraëls": "agrarisch",
+    "bollete": "bollenteelt",
+    "precisielandaal": "precisielandbouw",
+    "landaal": "landbouw",
+    "uitgevaseerd": "uitgefaseerd",
+    "faseerig": "fasering",
+    "invoet": "invloed",
+    "percele": "percelen",
+    "wonenscholen": "woningen, scholen",
+    "kreekensstructuur": "krekenstructuur",
+    "Alignia": "alinea",
+    "alignia": "alinea",
+    "neet niet weg": "neemt niet weg",
+    "Hollandse corona": "Hollands Kroon",
+    "meneer Borst-Koorn": "mevrouw Borst-Koorn",
+    "vrouw Beraak": "mevrouw Braak",
+    "Van Gaberen": "van Gameren",
+    "Dugge": "de Git",
+    "Heller": "de Herder",
+    "Frans Bozinski": "Frank Buczynski",
+    "Van de Kruft": "van der Klugt",
+    "aachrotech": "agritech",
 }
-
-# Achternamen die zeker kloppen
 
 # Achternamen die zeker kloppen uit het officiële proces-verbaal
 ACHTERNAMEN_TEXEL = [
@@ -1522,7 +1486,7 @@ def main():
         "ffmpeg", "-y",
         "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
         "-i", audio_file,
-        "-filter_complex", "[0:a]atrim=duration=2[silence];[silence][1:a]concat=n=2:v=0:a=1[out]",
+        "-filter_complex", "[0:a]atrim=duration=10[silence];[silence][1:a]concat=n=2:v=0:a=1[out]",
         "-map", "[out]",
         "-codec:a", "libmp3lame", "-q:a", "4",
         padded_file
@@ -1530,7 +1494,7 @@ def main():
     result = sp.run(pad_cmd, capture_output=True, text=True)
     if result.returncode == 0:
         audio_file = padded_file
-        log("2 seconden padding toegevoegd aan begin van MP3")
+        log("10 seconden padding toegevoegd aan begin van MP3")
     else:
         log("Padding mislukt - origineel gebruiken")
 
