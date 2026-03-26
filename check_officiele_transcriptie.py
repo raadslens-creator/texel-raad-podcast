@@ -152,6 +152,9 @@ def _zoek_ibabs_id_automatisch(date_id):
 def fetch_officiele_ondertiteling(agenda_id):
     """
     Haal de officiële ondertiteling PDF op van bestuurlijkeinformatie.nl.
+    Probeert meerdere methodes:
+    1. HTML scrapen op documentId links
+    2. Alle documentIds op de pagina proberen (PDF check op inhoud)
     Geeft (pdf_bytes, url) of (None, None) als niet beschikbaar.
     """
     try:
@@ -160,28 +163,71 @@ def fetch_officiele_ondertiteling(agenda_id):
         with urllib.request.urlopen(req, timeout=15) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
 
-        # Zoek ondertiteling-links
+        # Verzamel alle documentIds op de pagina
+        alle_doc_ids = list(dict.fromkeys(re.findall(r'documentId=([a-f0-9-]{36})', html)))
+
+        if not alle_doc_ids:
+            return None, None
+
+        log(f"  {len(alle_doc_ids)} document-IDs gevonden op pagina")
+
+        # Prioriteer ondertiteling-links
         ondertiteling_ids = []
-        for m in re.finditer(r'[Oo]ndertiteling.{0,200}?documentId=([a-f0-9-]{36})', html, re.DOTALL):
-            ondertiteling_ids.append(m.group(1))
-        for m in re.finditer(r'documentId=([a-f0-9-]{36}).{0,200}?[Oo]ndertiteling', html, re.DOTALL):
+        for m in re.finditer(r'[Oo]ndertiteling.{0,300}?documentId=([a-f0-9-]{36})', html, re.DOTALL):
+            if m.group(1) not in ondertiteling_ids:
+                ondertiteling_ids.append(m.group(1))
+        for m in re.finditer(r'documentId=([a-f0-9-]{36}).{0,300}?[Oo]ndertiteling', html, re.DOTALL):
             if m.group(1) not in ondertiteling_ids:
                 ondertiteling_ids.append(m.group(1))
 
-        if not ondertiteling_ids:
-            return None, None
+        # Probeer eerst ondertiteling-IDs, dan alle andere
+        te_proberen = ondertiteling_ids + [d for d in alle_doc_ids if d not in ondertiteling_ids]
 
-        for doc_id in ondertiteling_ids[:2]:
+        for doc_id in te_proberen[:10]:
             pdf_url = f"{IBABS_BASE}/Agenda/Document/{agenda_id}?documentId={doc_id}"
             try:
                 req2 = urllib.request.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req2, timeout=15) as resp2:
                     content_type = resp2.headers.get("Content-Type", "")
                     data = resp2.read()
-                    if "pdf" in content_type.lower() or data[:4] == b'%PDF':
-                        return data, pdf_url
+                    if data[:4] == b'%PDF':
+                        # Check of het een ondertiteling is door naar sleutelwoorden te zoeken
+                        # in de eerste 2KB (voor niet-gecomprimeerde PDFs)
+                        preview = data[:2000]
+                        is_ondertiteling = (
+                            b'ndertiteling' in preview or
+                            b'erslag' in preview or
+                            b'ranscript' in preview or
+                            b'oorzitter' in preview or  # "Voorzitter" duidt op vergaderverslag
+                            len(ondertiteling_ids) > 0 and doc_id in ondertiteling_ids
+                        )
+                        if is_ondertiteling or doc_id in ondertiteling_ids:
+                            log(f"  Ondertiteling PDF gevonden: {doc_id[:8]}...")
+                            return data, pdf_url
             except Exception:
                 pass
+
+        # Tweede poging: grootste PDF is waarschijnlijk het verslag
+        pdfs = []
+        for doc_id in alle_doc_ids[:15]:
+            pdf_url = f"{IBABS_BASE}/Agenda/Document/{agenda_id}?documentId={doc_id}"
+            try:
+                req2 = urllib.request.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req2, timeout=15) as resp2:
+                    data = resp2.read()
+                    if data[:4] == b'%PDF':
+                        pdfs.append((len(data), data, pdf_url))
+            except Exception:
+                pass
+
+        if pdfs:
+            # Sorteer op grootte - grootste PDF is waarschijnlijk het verslag
+            pdfs.sort(reverse=True)
+            # Alleen als groter dan 50KB (klein = samenvatting/bijlage)
+            if pdfs[0][0] > 50000:
+                log(f"  Grootste PDF als ondertiteling gebruikt ({pdfs[0][0]//1024}KB)")
+                return pdfs[0][1], pdfs[0][2]
+
         return None, None
     except Exception as e:
         log(f"Ondertiteling ophalen mislukt: {e}")
