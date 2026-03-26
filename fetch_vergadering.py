@@ -1,32 +1,16 @@
 #!/usr/bin/env python3
+"""
+Raadslens - Fetch Vergadering
+Haalt nieuwe raadsvergaderingen op voor alle geconfigureerde gemeenten.
+Configuratie via gemeenten.json.
+"""
 import json, os, re, shutil, subprocess, sys, urllib.request, urllib.error
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-ROYALCAST_API = "https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel"
-SEEN_FILE = Path("docs/seen.json")
-FEED_FILE = Path("docs/feed.xml")
-REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 SILENCE_THRESHOLD_DB = "-35dB"
 SILENCE_MIN_DURATION = 45
-LOGO_URL = "https://raadslens-creator.github.io/texel-raad-podcast/logo.png"
-
-PODCAST_BESCHRIJVING = (
-    "Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse "
-    "gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer "
-    "het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de "
-    "hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten."
-)
-
-VERANTWOORDING = """---
-Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt, zonder drie uur voor een scherm te zitten.
-
-De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op texel.bestuurlijkeinformatie.nl.
-
-Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
-
-Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com"""
 
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
@@ -34,13 +18,30 @@ MAANDEN = {
     9: "september", 10: "oktober", 11: "november", 12: "december"
 }
 
+VERANTWOORDING_TEMPLATE = """---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op {ibabs_link}.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com"""
+
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def laad_gemeenten():
+    config_file = Path("gemeenten.json")
+    if not config_file.exists():
+        log("FOUT: gemeenten.json niet gevonden")
+        sys.exit(1)
+    config = json.loads(config_file.read_text())
+    return [g for g in config["gemeenten"] if g.get("actief", True)]
+
+
 def parse_royalcast_timestamp(ts_str):
-    """Zet /Date(1771437970000)/ om naar seconden."""
     if not ts_str:
         return None
     match = re.search(r"\d+", ts_str)
@@ -49,111 +50,91 @@ def parse_royalcast_timestamp(ts_str):
     return None
 
 
-def get_recent_webcast_ids():
-    """Genereer mogelijke webcast IDs voor de afgelopen 14 dagen."""
+def get_candidate_ids(gemeente, handmatige_ids=None):
+    """Genereer kandidaat-IDs voor de opgegeven periode."""
+    if handmatige_ids:
+        return handmatige_ids
     ids = []
     today = datetime.now(timezone.utc)
-    for days_ago in range(0, 45):
+    check_days = gemeente.get("check_days", 14)
+    for days_ago in range(0, check_days):
         date = today - timedelta(days=days_ago)
         date_str = date.strftime("%Y%m%d")
-        for n in [1, 2, 3]:
+        for n in [1, 2, 3, 4]:
             ids.append(f"{date_str}_{n}")
     return ids
 
 
-def check_and_fetch_webcast(date_id):
-    """
-    Controleer of een webcast beschikbaar is via de API.
-    Geeft de volledige API-response terug als die beschikbaar is, anders None.
-    """
-    url = f"{ROYALCAST_API}/{date_id}?method=GET&key="
-    log(f"Controleren: {url}")
+def check_and_fetch_webcast(gemeente, date_id):
+    slug = gemeente["royalcast_slug"]
+    url = f"https://channel.royalcast.com/portal/api/1.0/{slug}/webcasts/{slug}/{date_id}?method=GET&key="
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
             if data.get("id") or data.get("webcastId") or data.get("webcstId"):
-                log(f"Gevonden!")
                 return data
-            log(f"Leeg antwoord")
             return None
     except urllib.error.HTTPError as e:
-        log(f"Niet beschikbaar: {e.code}")
+        if e.code not in [404, 403]:
+            log(f"HTTP {e.code}: {date_id}")
         return None
     except Exception as e:
-        log(f"Fout: {e}")
+        log(f"Fout bij {date_id}: {e}")
         return None
 
 
 def get_intro_duration(data):
-    """
-    Bereken hoe lang het intro is dat weggeknipt moet worden.
-    = tijd tussen actualStart en het eerste spreekmoment in topics.
-    """
     actual_start = parse_royalcast_timestamp(data.get("actualStart"))
     if not actual_start:
-        log("Geen actualStart gevonden - intro niet wegknippen")
         return 0
-
     earliest_event = None
     for topic in data.get("topics", []):
         for event in topic.get("events", []):
             event_start = parse_royalcast_timestamp(event.get("start"))
             if event_start and (earliest_event is None or event_start < earliest_event):
                 earliest_event = event_start
-
     if not earliest_event:
-        log("Geen topic-events gevonden - intro niet wegknippen")
         return 0
-
     intro_sec = max(0, earliest_event - actual_start)
-    log(f"Intro: {intro_sec:.0f}s (actualStart tot eerste spreker)")
+    if intro_sec > 120:
+        log(f"Intro van {intro_sec:.0f}s te lang - op 0 gezet")
+        return 0
+    log(f"Intro: {intro_sec:.0f}s")
     return intro_sec
 
 
 def get_chapter_times(data, actual_start_sec):
-    """
-    Haal hoofdstuk-tijdstempels op uit de topics array.
-    Geeft lijst van {titel, start_sec} terug, relatief aan actualStart.
-    """
     chapters = []
     for topic in data.get("topics", []):
         titel = topic.get("title", "").strip()
         if not titel:
             continue
-
         events = topic.get("events", [])
         if events:
             event_start = parse_royalcast_timestamp(events[0].get("start"))
-            if event_start and actual_start_sec:
-                start_sec = max(0, event_start - actual_start_sec)
-            else:
-                start_sec = 0
+            start_sec = max(0, event_start - actual_start_sec) if event_start and actual_start_sec else 0
         else:
             start_sec = chapters[-1]["start_sec"] + 60 if chapters else 0
-
-        chapters.append({
-            "titel": titel[:80],
-            "start_sec": start_sec,
-        })
-
+        chapters.append({"titel": titel[:80], "start_sec": start_sec})
     log(f"{len(chapters)} hoofdstukken gevonden")
     return chapters
 
 
-def load_seen():
-    if SEEN_FILE.exists():
-        return json.loads(SEEN_FILE.read_text())
+def load_seen(gemeente):
+    seen_file = Path(gemeente["seen_file"])
+    if seen_file.exists():
+        return json.loads(seen_file.read_text())
     return []
 
 
-def save_seen(seen):
-    SEEN_FILE.parent.mkdir(parents=True, exist_ok=True)
-    SEEN_FILE.write_text(json.dumps(seen, indent=2))
+def save_seen(gemeente, seen):
+    seen_file = Path(gemeente["seen_file"])
+    seen_file.parent.mkdir(parents=True, exist_ok=True)
+    seen_file.write_text(json.dumps(seen, indent=2))
 
 
-def download_audio(date_id, data):
-    """Download audio via directe MP3 of MP4 link uit de API."""
+def download_audio(date_id, data, gemeente_id):
     mp3_url = None
     mp4_url = None
     for att in data.get("attachments", []):
@@ -161,31 +142,27 @@ def download_audio(date_id, data):
         loc = att.get("location", "")
         if "audio/mpeg" in ct or loc.endswith(".mp3"):
             mp3_url = loc
-            log(f"MP3 gevonden")
             break
         if "video/mp4" in ct or loc.endswith(".mp4"):
             mp4_url = loc
 
     download_url = mp3_url or mp4_url
     if not download_url:
-        log("Geen MP3 of MP4 gevonden - vergadering mogelijk nog niet verwerkt")
+        log("Geen MP3/MP4 gevonden - vergadering mogelijk nog niet verwerkt")
         return None
 
-    output = f"audio/{date_id}_raw.mp3"
-    Path("audio").mkdir(exist_ok=True)
-    log(f"Downloaden...")
+    audio_dir = Path(f"audio/{gemeente_id}")
+    audio_dir.mkdir(parents=True, exist_ok=True)
+    output = str(audio_dir / f"{date_id}_raw.mp3")
+    log(f"MP3 downloaden...")
 
     cmd = [
-        "yt-dlp",
-        "--extract-audio", "--audio-format", "mp3",
-        "--audio-quality", "64K",
-        "--output", output,
-        "--no-playlist",
-        download_url,
+        "yt-dlp", "--extract-audio", "--audio-format", "mp3",
+        "--audio-quality", "64K", "--output", output,
+        "--no-playlist", download_url,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        log(f"yt-dlp fout - directe download proberen...")
         try:
             req = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=300) as resp:
@@ -203,28 +180,17 @@ def download_audio(date_id, data):
 
 
 def trim_intro(input_file, output_file, intro_sec):
-    """Knip het intro weg vanaf het begin van de audio."""
     if intro_sec <= 0:
         shutil.copy(input_file, output_file)
         return
-    log(f"Intro wegknippen: eerste {intro_sec:.0f}s verwijderen...")
-    cmd = [
-        "ffmpeg", "-y",
-        "-i", input_file,
-        "-ss", str(intro_sec),
-        "-acodec", "copy",
-        output_file,
-    ]
+    log(f"Intro wegknippen: eerste {intro_sec:.0f}s...")
+    cmd = ["ffmpeg", "-y", "-i", input_file, "-ss", str(intro_sec), "-acodec", "copy", output_file]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        log(f"Intro knippen mislukt - origineel gebruiken")
         shutil.copy(input_file, output_file)
-    else:
-        log(f"Intro weggeknipt")
 
 
 def remove_silences(input_file, output_file):
-    """Verwijder lange stiltes (schorsingen) uit de audio."""
     log("Stiltedetectie...")
     detect_cmd = [
         "ffmpeg", "-i", input_file,
@@ -234,122 +200,77 @@ def remove_silences(input_file, output_file):
     result = subprocess.run(detect_cmd, capture_output=True, text=True)
     starts = re.findall(r"silence_start: ([\d.]+)", result.stderr)
     ends = re.findall(r"silence_end: ([\d.]+)", result.stderr)
-    silences = [
-        (float(s), float(e), float(e) - float(s))
-        for s, e in zip(starts, ends)
-        if float(e) - float(s) >= SILENCE_MIN_DURATION
-    ]
+    silences = [(float(s), float(e)) for s, e in zip(starts, ends) if float(e) - float(s) >= SILENCE_MIN_DURATION]
+    log(f"{len(silences)} schorsingen gevonden")
+
     if not silences:
-        log("Geen schorsingen gevonden")
         shutil.copy(input_file, output_file)
-        return []
-    log(f"{len(silences)} schorsingen, totaal {sum(d for _,_,d in silences):.0f}s verwijderd")
-    KEEP_PAUSE = 1.0
-    segments = []
+        return silences
+
+    parts = []
     prev_end = 0.0
-    for silence_start, silence_end, _ in silences:
-        seg_end = silence_start + KEEP_PAUSE
-        if seg_end > prev_end:
-            segments.append((prev_end, seg_end))
-        prev_end = silence_end - KEEP_PAUSE
-    segments.append((prev_end, None))
-    filter_parts = []
-    for i, (start, end) in enumerate(segments):
-        if end is not None:
-            filter_parts.append(f"[0:a]atrim=start={start}:end={end},asetpts=PTS-STARTPTS[a{i}]")
-        else:
-            filter_parts.append(f"[0:a]atrim=start={start},asetpts=PTS-STARTPTS[a{i}]")
-    concat_inputs = "".join(f"[a{i}]" for i in range(len(segments)))
-    filter_complex = ";".join(filter_parts) + f";{concat_inputs}concat=n={len(segments)}:v=0:a=1[outa]"
-    cut_cmd = [
+    for s_start, s_end in silences:
+        if s_start > prev_end:
+            parts.append(f"between(t,{prev_end:.3f},{s_start:.3f})")
+        prev_end = s_end
+    parts.append(f"gte(t,{prev_end:.3f})")
+
+    filter_expr = "+".join(parts)
+    cmd = [
         "ffmpeg", "-y", "-i", input_file,
-        "-filter_complex", filter_complex,
-        "-map", "[outa]", "-codec:a", "libmp3lame", "-q:a", "4",
-        output_file,
+        "-af", f"aselect='{filter_expr}',asetpts=N/SR/TB",
+        "-acodec", "libmp3lame", "-q:a", "4", output_file
     ]
-    log("Audio knippen...")
-    result = subprocess.run(cut_cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        log(f"Knippen mislukt - origineel gebruiken")
+        log("Stilte-verwijdering mislukt - origineel gebruiken")
         shutil.copy(input_file, output_file)
-        return []
-    log(f"Geknipt: {Path(output_file).stat().st_size / 1024 / 1024:.1f} MB")
     return silences
 
 
 def correct_chapter_times(chapters, intro_sec, silences):
-    """Corrigeer hoofdstuktijden voor weggeknipt intro en schorsingen."""
     corrected = []
     for ch in chapters:
-        t = ch["start_sec"]
-        t = max(0, t - intro_sec)
+        t = max(0, ch["start_sec"] - intro_sec)
         removed = sum(
-            min(end, t) - start
-            for start, end, _ in silences
-            if start < t
+            min(s_end, t) - s_start
+            for s_start, s_end in silences if s_start < t
         )
-        t = max(0, t - removed)
-        corrected.append({**ch, "start_sec": t})
+        corrected.append({"titel": ch["titel"], "start_sec": max(0, t - removed)})
     return corrected
 
 
 def add_chapters_to_mp3(audio_file, chapters):
-    """Voeg hoofdstukken toe als ID3 CHAP-tags via mutagen."""
-    if not chapters:
-        return
     try:
+        import mutagen.id3
         from mutagen.mp3 import MP3
-        from mutagen.id3 import ID3, CHAP, TIT2, CTOC, CTOCFlags
-    except ImportError:
-        log("mutagen niet gevonden - hoofdstukken overgeslagen")
-        return
-
-    log(f"Hoofdstukken toevoegen ({len(chapters)} stuks)...")
-    audio = MP3(audio_file)
-    total_ms = int(audio.info.length * 1000)
-
-    try:
-        tags = ID3(audio_file)
-    except Exception:
-        tags = ID3()
-
-    tags.delall("CHAP")
-    tags.delall("CTOC")
-
-    chapter_ids = []
-    for i, ch in enumerate(chapters):
-        start_ms = int(ch["start_sec"] * 1000)
-        end_ms = (
-            int(chapters[i + 1]["start_sec"] * 1000)
-            if i + 1 < len(chapters)
-            else total_ms
-        )
-        cid = f"chp{i}"
-        chapter_ids.append(cid)
-        tags.add(CHAP(
-            element_id=cid,
-            start_time=start_ms,
-            end_time=end_ms,
-            start_offset=0xFFFFFFFF,
-            end_offset=0xFFFFFFFF,
-            sub_frames=[TIT2(encoding=3, text=ch["titel"])],
+        tags = mutagen.id3.ID3(audio_file)
+        tags.delall("CHAP")
+        tags.delall("CTOC")
+        child_ids = []
+        for i, ch in enumerate(chapters):
+            chap_id = f"chp{i}"
+            child_ids.append(chap_id)
+            start_ms = int(ch["start_sec"] * 1000)
+            end_ms = int(chapters[i+1]["start_sec"] * 1000) if i+1 < len(chapters) else int(MP3(audio_file).info.length * 1000)
+            tags.add(mutagen.id3.CHAP(
+                element_id=chap_id, start_time=start_ms, end_time=end_ms,
+                start_offset=0xFFFFFFFF, end_offset=0xFFFFFFFF,
+                sub_frames=[mutagen.id3.TIT2(text=[ch["titel"]])]
+            ))
+        tags.add(mutagen.id3.CTOC(
+            element_id="toc", flags=mutagen.id3.CTOCFlags.TOP_LEVEL | mutagen.id3.CTOCFlags.ORDERED,
+            child_element_ids=child_ids, sub_frames=[]
         ))
-
-    tags.add(CTOC(
-        element_id="toc",
-        flags=CTOCFlags.TOP_LEVEL | CTOCFlags.ORDERED,
-        child_element_ids=chapter_ids,
-        sub_frames=[TIT2(encoding=3, text="Inhoudsopgave")],
-    ))
-
-    tags.save(audio_file)
-    log("Hoofdstukken opgeslagen")
+        tags.save(audio_file)
+        log(f"{len(chapters)} hoofdstukken ingebouwd")
+    except Exception as e:
+        log(f"Hoofdstukken toevoegen mislukt: {e}")
 
 
-def build_shownotes(data, date_str, chapters):
-    """Bouw shownotes op uit agendapunten, hoofdstukken en verantwoording."""
+def build_shownotes(data, date_str, chapters, gemeente):
     topics = data.get("topics", [])
-    regels = [f"Vergadering gemeente Texel\n{date_str}"]
+    regels = [f"Vergadering gemeente {gemeente['naam']} - {date_str}"]
 
     if topics:
         regels.append("\nAgenda:")
@@ -367,27 +288,33 @@ def build_shownotes(data, date_str, chapters):
             ts = f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
             regels.append(f"• {ts} {ch['titel']}")
 
-    regels.append(f"\n{VERANTWOORDING}")
+    verantwoording = VERANTWOORDING_TEMPLATE.format(ibabs_link=gemeente["ibabs_link"])
+    regels.append(f"\n{verantwoording}")
     return "\n".join(regels)
 
 
-def create_github_release(date_id, title, date_str, audio_file):
-    if not GITHUB_TOKEN or not REPO:
+def create_github_release(date_id, title, date_str, audio_file, gemeente):
+    repo = gemeente["repo"]
+    gemeente_id = gemeente["id"]
+    if not GITHUB_TOKEN or not repo:
         log("Geen GitHub token/repo")
         return None
+
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
         "Content-Type": "application/json",
     }
+    tag = f"{gemeente_id}-{date_id}"
     release_data = json.dumps({
-        "tag_name": f"vergadering-{date_id}",
+        "tag_name": tag,
         "name": title,
-        "body": f"Vergadering Texel - {date_str}",
+        "body": f"Vergadering {gemeente['naam']} - {date_str}",
         "draft": False, "prerelease": False,
     }).encode()
+
     req = urllib.request.Request(
-        f"https://api.github.com/repos/{REPO}/releases",
+        f"https://api.github.com/repos/{repo}/releases",
         data=release_data, headers=headers, method="POST",
     )
     try:
@@ -395,20 +322,19 @@ def create_github_release(date_id, title, date_str, audio_file):
             release = json.loads(resp.read())
     except urllib.error.HTTPError as e:
         if e.code == 422:
-            log("Release bestaat al - bestaande release ophalen...")
+            log("Release bestaat al - bestaande ophalen...")
             req2 = urllib.request.Request(
-                f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}",
-                headers={
-                    "Authorization": f"token {GITHUB_TOKEN}",
-                    "Accept": "application/vnd.github+json",
-                }
+                f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
+                headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
             )
             with urllib.request.urlopen(req2) as resp:
                 release = json.loads(resp.read())
         else:
             raise
+
     upload_url = release["upload_url"].replace("{?name,label}", "")
-    log(f"Release aangemaakt/gevonden: {release['html_url']}")
+    log(f"Release: {release['html_url']}")
+
     upload_headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -420,17 +346,24 @@ def create_github_release(date_id, title, date_str, audio_file):
         f"{upload_url}?name={Path(audio_file).name}",
         data=audio_data, headers=upload_headers, method="POST",
     )
-    with urllib.request.urlopen(req) as resp:
-        asset = json.loads(resp.read())
-    log(f"MP3 geüpload: {asset['browser_download_url']}")
-    return asset["browser_download_url"]
+    try:
+        with urllib.request.urlopen(req) as resp:
+            asset = json.loads(resp.read())
+        log(f"MP3 geüpload: {asset['browser_download_url']}")
+        return asset["browser_download_url"]
+    except urllib.error.HTTPError as e:
+        if e.code == 422:
+            log("Asset bestaat al - release URL gebruiken")
+            return release.get("assets", [{}])[0].get("browser_download_url")
+        raise
 
 
-def load_episodes():
+def load_episodes(gemeente):
+    feed_file = Path(gemeente["feed_file"])
     episodes = []
-    if not FEED_FILE.exists():
+    if not feed_file.exists():
         return episodes
-    content = FEED_FILE.read_text()
+    content = feed_file.read_text()
     for item in re.findall(r"<item>(.*?)</item>", content, re.DOTALL):
         title = re.search(r"<title>(.*?)</title>", item)
         guid = re.search(r"<guid[^>]*>(.*?)</guid>", item)
@@ -445,8 +378,14 @@ def load_episodes():
     return episodes
 
 
-def update_rss_feed(episodes):
-    FEED_FILE.parent.mkdir(parents=True, exist_ok=True)
+def update_rss_feed(episodes, gemeente):
+    feed_file = Path(gemeente["feed_file"])
+    feed_file.parent.mkdir(parents=True, exist_ok=True)
+    logo_url = gemeente["logo_url"]
+    ibabs_link = gemeente["ibabs_link"]
+    podcast_titel = gemeente["podcast_titel"]
+    beschrijving = gemeente["podcast_beschrijving"]
+
     items = ""
     for ep in episodes:
         items += f"""
@@ -457,22 +396,23 @@ def update_rss_feed(episodes):
     <enclosure url="{ep['audio_url']}" type="audio/mpeg" length="{ep.get('size', 0)}"/>
     <guid isPermaLink="false">{ep['id']}</guid>
     <itunes:duration>{ep.get('duration', '')}</itunes:duration>
-    <itunes:image href="{LOGO_URL}"/>
+    <itunes:image href="{logo_url}"/>
   </item>"""
-    FEED_FILE.write_text(f"""<?xml version="1.0" encoding="UTF-8"?>
+
+    feed_file.write_text(f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
-  <title>Raadslens Texel</title>
-  <description>{PODCAST_BESCHRIJVING}</description>
-  <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
+  <title>{podcast_titel}</title>
+  <description>{beschrijving}</description>
+  <link>{ibabs_link}</link>
   <language>nl</language>
   <itunes:author>Raadslens</itunes:author>
-  <itunes:summary>{PODCAST_BESCHRIJVING}</itunes:summary>
-  <itunes:image href="{LOGO_URL}"/>
+  <itunes:summary>{beschrijving}</itunes:summary>
+  <itunes:image href="{logo_url}"/>
   <image>
-    <url>{LOGO_URL}</url>
-    <title>Raadslens Texel</title>
-    <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
+    <url>{logo_url}</url>
+    <title>{podcast_titel}</title>
+    <link>{ibabs_link}</link>
   </image>
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>{items}
@@ -481,26 +421,24 @@ def update_rss_feed(episodes):
     log(f"RSS bijgewerkt: {len(episodes)} afleveringen")
 
 
-def main():
-    log("=== Raadslens Texel ===")
+def verwerk_gemeente(gemeente, handmatige_ids=None):
+    log(f"\n=== {gemeente['naam']} ===")
     subprocess.run(["pip", "install", "mutagen", "-q"], check=False)
 
-    seen = load_seen()
-    candidates = get_recent_webcast_ids()
-    log(f"{len(candidates)} kandidaat-IDs om te controleren")
+    seen = load_seen(gemeente)
+    candidates = get_candidate_ids(gemeente, handmatige_ids)
+    log(f"{len(candidates)} kandidaat-IDs")
 
     new_found = False
     for date_id in candidates:
         if date_id in seen:
             continue
 
-        data = check_and_fetch_webcast(date_id)
+        data = check_and_fetch_webcast(gemeente, date_id)
         if not data:
             continue
 
         new_found = True
-
-        # Nederlandse datum
         try:
             dt = datetime.strptime(date_id[:8], "%Y%m%d")
             date_str = f"{dt.day} {MAANDEN[dt.month]} {dt.year}"
@@ -510,41 +448,31 @@ def main():
             pub_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
             dt = datetime.now(timezone.utc)
 
-        # Titel: type + datum DD-MM-YYYY
         vergadering_type = data.get("title", "Vergadering")
         full_title = f"{vergadering_type} {dt.day:02d}-{dt.month:02d}-{dt.year}"
         log(f"Verwerken: {full_title}")
 
-        # Intro-duur bepalen
         intro_sec = get_intro_duration(data)
-
-        # actualStart voor hoofdstuk-tijdberekening
         actual_start_sec = parse_royalcast_timestamp(data.get("actualStart"))
-
-        # Hoofdstukken uit API
         chapters = get_chapter_times(data, actual_start_sec)
 
-        # Download
-        raw_audio = download_audio(date_id, data)
+        raw_audio = download_audio(date_id, data, gemeente["id"])
         if not raw_audio:
             seen.append(date_id)
-            save_seen(seen)
+            save_seen(gemeente, seen)
             continue
 
-        # Stap 1: intro wegknippen
-        trimmed_audio = f"audio/{date_id}_trimmed.mp3"
+        audio_dir = Path(f"audio/{gemeente['id']}")
+        trimmed_audio = str(audio_dir / f"{date_id}_trimmed.mp3")
         trim_intro(raw_audio, trimmed_audio, intro_sec)
 
-        # Stap 2: schorsingen verwijderen
-        processed = f"audio/{date_id}.mp3"
+        processed = str(audio_dir / f"{date_id}.mp3")
         silences = remove_silences(trimmed_audio, processed)
 
-        # Hoofdstuktijden corrigeren en inbrengen
         if chapters:
             chapters = correct_chapter_times(chapters, intro_sec, silences)
             add_chapters_to_mp3(processed, chapters)
 
-        # Duur bepalen
         try:
             from mutagen.mp3 import MP3
             secs = int(MP3(processed).info.length)
@@ -552,18 +480,15 @@ def main():
         except Exception:
             duration_str = ""
 
-        # GitHub Release
-        audio_url = create_github_release(date_id, full_title, date_str, processed)
+        audio_url = create_github_release(date_id, full_title, date_str, processed, gemeente)
         if not audio_url:
             continue
 
-        # Shownotes met agenda, hoofdstukken en verantwoording
-        description = build_shownotes(data, date_str, chapters)
+        description = build_shownotes(data, date_str, chapters, gemeente)
 
-        # RSS bijwerken
-        episodes = load_episodes()
+        episodes = load_episodes(gemeente)
         episodes.insert(0, {
-            "id": date_id,
+            "id": f"{gemeente['id']}-{date_id}",
             "title": full_title,
             "description": description,
             "audio_url": audio_url,
@@ -571,13 +496,33 @@ def main():
             "size": Path(processed).stat().st_size,
             "duration": duration_str,
         })
-        update_rss_feed(episodes)
+        update_rss_feed(episodes, gemeente)
         seen.append(date_id)
-        save_seen(seen)
+        save_seen(gemeente, seen)
         log(f"Klaar: {full_title} ({duration_str})")
 
     if not new_found:
-        log("Geen nieuwe vergaderingen gevonden")
+        log("Geen nieuwe vergaderingen")
+
+
+def main():
+    log("=== Raadslens - Fetch Vergadering ===")
+
+    # Optionele gemeente-filter via argument
+    gemeente_filter = sys.argv[1] if len(sys.argv) > 1 else None
+    handmatige_ids = sys.argv[2].split(",") if len(sys.argv) > 2 else None
+
+    gemeenten = laad_gemeenten()
+    if gemeente_filter:
+        gemeenten = [g for g in gemeenten if g["id"] == gemeente_filter]
+        if not gemeenten:
+            log(f"Gemeente '{gemeente_filter}' niet gevonden in gemeenten.json")
+            sys.exit(1)
+
+    for gemeente in gemeenten:
+        verwerk_gemeente(gemeente, handmatige_ids)
+
+    log("\n=== Klaar ===")
 
 
 if __name__ == "__main__":

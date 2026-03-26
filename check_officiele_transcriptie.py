@@ -7,6 +7,7 @@ Zo ja, vervangt de tijdelijke transcriptie met de officiële versie.
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -16,8 +17,25 @@ import urllib.error
 from datetime import datetime
 from pathlib import Path
 
-IBABS_BASE = "https://texel.bestuurlijkeinformatie.nl"
-TRANSCRIPTIES_DIR = Path("docs/transcripties")
+import sys
+
+def laad_gemeente_config(gemeente_id):
+    config_file = Path("gemeenten.json")
+    if config_file.exists():
+        config = json.loads(config_file.read_text())
+        for g in config["gemeenten"]:
+            if g["id"] == gemeente_id:
+                return g
+    return {
+        "id": gemeente_id,
+        "ibabs_base": "https://texel.bestuurlijkeinformatie.nl",
+        "transcripties_dir": "docs/transcripties",
+    }
+
+GEMEENTE_ID = os.environ.get("GEMEENTE_ID", "texel") if "os" in dir() else "texel"
+GEMEENTE = laad_gemeente_config(GEMEENTE_ID)
+IBABS_BASE = GEMEENTE["ibabs_base"]
+TRANSCRIPTIES_DIR = Path(GEMEENTE.get("transcripties_dir", "docs/transcripties"))
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
     5: "mei", 6: "juni", 7: "juli", 8: "augustus",

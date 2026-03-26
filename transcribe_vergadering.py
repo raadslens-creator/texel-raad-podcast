@@ -21,14 +21,36 @@ import urllib.error
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROYALCAST_API = "https://channel.royalcast.com/portal/api/1.0/gemeentetexel/webcasts/gemeentetexel"
-IBABS_BASE = "https://texel.bestuurlijkeinformatie.nl"
 REPO = os.environ.get("GITHUB_REPOSITORY", "")
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 DATE_ID = os.environ.get("DATE_ID", "")
-TRANSCRIPTIES_DIR = Path("docs/transcripties")
-NAMEN_CACHE_FILE = Path("docs/namen_cache.json")
-VOCABULARY_CACHE_FILE = Path("docs/vocabulary_cache.json")
+GEMEENTE_ID = os.environ.get("GEMEENTE_ID", "texel")
+
+# Laad gemeente-configuratie
+def laad_gemeente_config(gemeente_id):
+    config_file = Path("gemeenten.json")
+    if config_file.exists():
+        config = json.loads(config_file.read_text())
+        for g in config["gemeenten"]:
+            if g["id"] == gemeente_id:
+                return g
+    # Fallback naar Texel defaults
+    return {
+        "id": "texel",
+        "naam": "Texel",
+        "royalcast_slug": "gemeentetexel",
+        "ibabs_base": "https://texel.bestuurlijkeinformatie.nl",
+        "transcripties_dir": "docs/transcripties",
+        "namen_cache_file": "docs/namen_cache.json",
+        "vocabulary_cache_file": "docs/vocabulary_cache.json",
+    }
+
+GEMEENTE = laad_gemeente_config(GEMEENTE_ID)
+ROYALCAST_API = f"https://channel.royalcast.com/portal/api/1.0/{GEMEENTE['royalcast_slug']}/webcasts/{GEMEENTE['royalcast_slug']}"
+IBABS_BASE = GEMEENTE["ibabs_base"]
+TRANSCRIPTIES_DIR = Path(GEMEENTE.get("transcripties_dir", "docs/transcripties"))
+NAMEN_CACHE_FILE = Path(GEMEENTE.get("namen_cache_file", f"docs/{GEMEENTE_ID}/namen_cache.json"))
+VOCABULARY_CACHE_FILE = Path(GEMEENTE.get("vocabulary_cache_file", f"docs/{GEMEENTE_ID}/vocabulary_cache.json"))
 
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
@@ -863,7 +885,8 @@ def get_latest_release_with_mp3():
 
 
 def get_release_mp3_url(date_id):
-    url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
+    tag = f"{GEMEENTE_ID}-{date_id}" if GEMEENTE_ID != "texel" else f"vergadering-{date_id}"
+    url = f"https://api.github.com/repos/{REPO}/releases/tags/{tag}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -1171,7 +1194,8 @@ def build_transcript(segments, speakers, data, date_str):
 def upload_transcript_to_release(date_id, transcript_text):
     if not GITHUB_TOKEN or not REPO:
         return None
-    url = f"https://api.github.com/repos/{REPO}/releases/tags/vergadering-{date_id}"
+    tag = f"{GEMEENTE_ID}-{date_id}" if GEMEENTE_ID != "texel" else f"vergadering-{date_id}"
+    url = f"https://api.github.com/repos/{REPO}/releases/tags/{tag}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github+json",
@@ -1212,7 +1236,7 @@ def upload_transcript_to_release(date_id, transcript_text):
 # ============================================================
 
 def main():
-    log("=== Raadslens Transcriptie ===")
+    log(f"=== Raadslens Transcriptie - {GEMEENTE['naam']} ===")
 
     if not REPO or not GITHUB_TOKEN:
         log("Geen REPO of GITHUB_TOKEN")
