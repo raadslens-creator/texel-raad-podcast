@@ -30,26 +30,19 @@ jobs:
       - name: Dependencies installeren
         run: pip install pdfminer.six requests
 
-      - name: Check uitvoeren
+      - name: Check uitvoeren (specifieke gemeente)
+        if: ${{ github.event.inputs.gemeente != '' }}
         env:
           GEMEENTE_ID: ${{ github.event.inputs.gemeente }}
+        run: python check_officiele_transcriptie.py
+
+      - name: Check uitvoeren (alle gemeenten)
+        if: ${{ github.event.inputs.gemeente == '' }}
         run: |
-          if [ -z "$GEMEENTE_ID" ]; then
-            # Alle actieve gemeenten draaien
-            python3 -c "
-import json
-from pathlib import Path
-config = json.loads(Path('gemeenten.json').read_text())
-for g in config['gemeenten']:
-    if g.get('actief', True):
-        print(g['id'])
-" | while read gemeente_id; do
-              echo "=== Check: $gemeente_id ==="
-              GEMEENTE_ID="$gemeente_id" python check_officiele_transcriptie.py
-            done
-          else
-            python check_officiele_transcriptie.py
-          fi
+          python3 list_gemeenten.py | while read gemeente_id; do
+            echo "=== Check: $gemeente_id ==="
+            GEMEENTE_ID="$gemeente_id" python check_officiele_transcriptie.py
+          done
 
       - name: Wijzigingen committen
         run: |
