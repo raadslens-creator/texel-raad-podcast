@@ -301,6 +301,27 @@ CORRECTIES = {
     "helder signal": "helder signaal",
     "steunverklading": "steunverklaring",
 
+    # Correcties 26-03-2026
+    "uitzlag": "uitslag",
+    "bij enkomst": "bijeenkomst",
+    "toege inventariseerd": "geïnventariseerd",
+    "Raadse akkoord": "raadsakkoord",
+    "Polenman": "Polderman",
+    "Poldenman": "Polderman",
+    "hartvertestel": "Hart voor Texel",
+    "wolkszaten": "wolk zaten",
+    "Tessus Blank": "Texels Belang",
+    "Tessus blanc": "Texels Belang",
+    "des tijds": "destijds",
+    "prijgestoel": "spreekgestoelte",
+    "lijststrikker": "lijsttrekker",
+    "verkiezinguitslag": "verkiezingsuitslag",
+    "verkiezinguitstag": "verkiezingsuitslag",
+    "inzitten": "inzetten",
+    "plaatszinden": "plaatsvinden",
+    "beenkomst": "bijeenkomst",
+    "informatieproces over slaan": "informatieproces overslaan",
+
     # Nieuwe correcties 25-03-2026 ronde 2
     "Juus": "Deuce",
     "Meneer Lutten": "Meneer Rutten",
@@ -1244,6 +1265,26 @@ def main():
 
     # MP3 downloaden
     audio_file = download_mp3(mp3_url, date_id)
+
+    # Voeg 2 seconden stille padding toe aan het begin
+    # zodat Whisper de allereerste woorden niet mist
+    padded_file = audio_file.replace(".mp3", "_padded.mp3")
+    import subprocess as sp
+    pad_cmd = [
+        "ffmpeg", "-y",
+        "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+        "-i", audio_file,
+        "-filter_complex", "[0:a]atrim=duration=2[silence];[silence][1:a]concat=n=2:v=0:a=1[out]",
+        "-map", "[out]",
+        "-codec:a", "libmp3lame", "-q:a", "4",
+        padded_file
+    ]
+    result = sp.run(pad_cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        audio_file = padded_file
+        log("2 seconden padding toegevoegd aan begin van MP3")
+    else:
+        log("Padding mislukt - origineel gebruiken")
 
     # Stiltes detecteren
     log("Stiltes detecteren voor timing-correctie...")
