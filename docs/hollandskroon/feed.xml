@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+<channel>
+  <title>Raadslens Hollands Kroon</title>
+  <description>Lokale democratie in je oren. Raadslens zet vergaderingen van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder uren voor een scherm te zitten.</description>
+  <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
+  <language>nl</language>
+  <itunes:author>Raadslens</itunes:author>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet vergaderingen van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder uren voor een scherm te zitten.</itunes:summary>
+  <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
+  <image>
+    <url>https://raadslens-creator.github.io/texel-raad-podcast/logo.png</url>
+    <title>Raadslens Hollands Kroon</title>
+    <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
+  </image>
+  <itunes:category text="Government"/>
+  <itunes:explicit>false</itunes:explicit>
+  <item>
+    <title>Raad 19-02-2026</title>
+    <description><![CDATA[Vergadering gemeente Hollands Kroon - 19 februari 2026
+
+Agenda:
+• A.0 Heropening vergadering na schorsing vergadering 17 februari 2026
+• B.3  Raadsvoorstel Omgevingsvisie Hollands Kroon
+• C Besluitvormend
+• C.18 Raadsvoorstel Omgevingsvisie Hollands Kroon (afhankelijk van besluit in het oordeelvormende gedeelte)
+• D.1 Motie(s) over een onderwerp dat niet op de agenda staat
+• D.1.A Motie 2026 01 Compensatieregeling OZB ook van toepassing op 2025 (CDA, PvdA, GL, SHK, D66, LDA, OHK, LEV!))
+• D.2 Sluiting
+
+Hoofdstukken:
+• 00:00 A.0 Heropening vergadering na schorsing vergadering 17 februari 2026
+• 00:59 B.3  Raadsvoorstel Omgevingsvisie Hollands Kroon
+• 2:19:03 C Besluitvormend
+• 2:19:19 C.18 Raadsvoorstel Omgevingsvisie Hollands Kroon (afhankelijk van besluit in het
+• 2:28:10 D.1 Motie(s) over een onderwerp dat niet op de agenda staat
+• 2:28:17 D.1.A Motie 2026 01 Compensatieregeling OZB ook van toepassing op 2025 (CDA, Pvd
+• 2:36:18 D.2 Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://hollandskroon.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Thu, 19 Feb 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://github.com/raadslens-creator/texel-raad-podcast/releases/download/hollandskroon-20260219_1/20260219_1.mp3" type="audio/mpeg" length="94291216"/>
+    <guid isPermaLink="false">hollandskroon-20260219_1</guid>
+    <itunes:duration>2:37:39</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
+  </item>
+</channel>
+</rss>
