@@ -1,0 +1,36 @@
+{
+  "gemeenten": [
+    {
+      "id": "texel",
+      "naam": "Texel",
+      "royalcast_slug": "gemeentetexel",
+      "ibabs_base": "https://texel.bestuurlijkeinformatie.nl",
+      "podcast_titel": "Raadslens Texel",
+      "podcast_beschrijving": "Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten.",
+      "logo_url": "https://raadslens-creator.github.io/texel-raad-podcast/logo.png",
+      "feed_file": "docs/feed.xml",
+      "seen_file": "docs/seen.json",
+      "transcripties_dir": "docs/transcripties",
+      "ibabs_link": "https://texel.bestuurlijkeinformatie.nl/Calendar",
+      "repo": "raadslens-creator/texel-raad-podcast",
+      "check_days": 14,
+      "actief": true
+    },
+    {
+      "id": "hollandskroon",
+      "naam": "Hollands Kroon",
+      "royalcast_slug": "gemeentehollandskroon",
+      "ibabs_base": "https://hollandskroon.bestuurlijkeinformatie.nl",
+      "podcast_titel": "Raadslens Hollands Kroon",
+      "podcast_beschrijving": "Lokale democratie in je oren. Raadslens zet vergaderingen van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder uren voor een scherm te zitten.",
+      "logo_url": "https://raadslens-creator.github.io/texel-raad-podcast/logo.png",
+      "feed_file": "docs/hollandskroon/feed.xml",
+      "seen_file": "docs/hollandskroon/seen.json",
+      "transcripties_dir": "docs/hollandskroon/transcripties",
+      "ibabs_link": "https://hollandskroon.bestuurlijkeinformatie.nl/Calendar",
+      "repo": "raadslens-creator/texel-raad-podcast",
+      "check_days": 45,
+      "actief": true
+    }
+  ]
+}
