@@ -12,7 +12,7 @@
       "seen_file": "docs/seen.json",
       "transcripties_dir": "docs/transcripties",
       "ibabs_link": "https://texel.bestuurlijkeinformatie.nl/Calendar",
-      "repo": "raadslens-creator/texel-raad-podcast",
+      "repo": "raadslens-creator/raadslens",
       "check_days": 14,
       "actief": true
     },
@@ -28,7 +28,7 @@
       "seen_file": "docs/hollandskroon/seen.json",
       "transcripties_dir": "docs/hollandskroon/transcripties",
       "ibabs_link": "https://hollandskroon.bestuurlijkeinformatie.nl/Calendar",
-      "repo": "raadslens-creator/texel-raad-podcast",
+      "repo": "raadslens-creator/raadslens",
       "check_days": 45,
       "actief": true
     }
