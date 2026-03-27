@@ -15,8 +15,32 @@
   </image>
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
+
+  <item>
+    <title>Raadsvergadering 23-03-2026</title>
+    <link>https://texel.bestuurlijkeinformatie.nl/Agenda/Index/4a8be1a5-97dd-4d90-b90c-7aa780c893f3</link>
+    <description><![CDATA[Vergadering gemeente Texel
+23 maart 2026
+
+Duidingsbijeenkomst over de uitslag van de gemeenteraadsverkiezingen.
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt, zonder drie uur voor een scherm te zitten.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op texel.bestuurlijkeinformatie.nl.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Mon, 23 Mar 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://github.com/raadslens-creator/raadslens/releases/download/vergadering-20260323_1/20260323_1.mp3" type="audio/mpeg" length="13631488"/>
+    <guid isPermaLink="false">texel-20260323_1</guid>
+    <itunes:duration></itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/texel-raad-podcast/logo.png"/>
+  </item>
   <item>
     <title>Raadsvergadering 18-02-2026</title>
+    <link>https://texel.bestuurlijkeinformatie.nl/Agenda/Index/acb3b1b7-db21-463d-863f-bc48af364882</link>
     <description><![CDATA[Vergadering gemeente Texel
 18 februari 2026
 
