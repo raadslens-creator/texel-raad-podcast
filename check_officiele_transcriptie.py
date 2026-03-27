@@ -7,6 +7,7 @@ Zo ja, vervangt de tijdelijke transcriptie met de officiële versie.
 """
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -16,35 +17,47 @@ import urllib.error
 from datetime import datetime
 from pathlib import Path
 
-IBABS_BASE = "https://texel.bestuurlijkeinformatie.nl"
-TRANSCRIPTIES_DIR = Path("docs/transcripties")
+GEMEENTE_ID = os.environ.get("GEMEENTE_ID", "texel")
+
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
     5: "mei", 6: "juni", 7: "juli", 8: "augustus",
     9: "september", 10: "oktober", 11: "november", 12: "december"
 }
 
-# Handmatige mapping van date_id naar iBabs agenda-ID
+# Handmatige mapping van (gemeente_id, date_id) naar iBabs agenda-ID
 # Vul aan als de automatische koppeling niet werkt
 IBABS_ID_MAPPING = {
-    "20260218_1": "acb3b1b7-db21-463d-863f-bc48af364882",
-    "20260323_1": "4a8be1a5-97dd-4d90-b90c-7aa780c893f3",
-    "20260331_1": "c15f1ab0-f3b1-4d9c-ae6e-07ab8b1ce32b",
-    "20260401_1": "167b14c9-3ec1-42b7-b40a-71fae1fe886d",
+    ("texel", "20260218_1"): "acb3b1b7-db21-463d-863f-bc48af364882",
+    ("texel", "20260323_1"): "4a8be1a5-97dd-4d90-b90c-7aa780c893f3",
+    ("texel", "20260331_1"): "c15f1ab0-f3b1-4d9c-ae6e-07ab8b1ce32b",
+    ("texel", "20260401_1"): "167b14c9-3ec1-42b7-b40a-71fae1fe886d",
 }
 
 DISCLAIMER_OFFICIEEL = (
     "Deze transcriptie is de officiële uitgeschreven ondertiteling van de vergadering, "
-    "beschikbaar gesteld via texel.bestuurlijkeinformatie.nl. "
+    "beschikbaar gesteld via bestuurlijkeinformatie.nl. "
     "Raadslens is niet verantwoordelijk voor de inhoud van de vergadering."
 )
 
-DISCLAIMER_TIJDELIJK = (
-    "Deze transcriptie is automatisch gegenereerd door Raadslens en kan fouten bevatten. "
-    "Raadslens is niet verantwoordelijk voor de inhoud van de vergadering of de "
-    "nauwkeurigheid van de transcriptie. De officiële verslaggeving is te vinden op "
-    "texel.bestuurlijkeinformatie.nl."
-)
+# Moet overeenkomen met DISCLAIMER_TRANSCRIPTIE in transcribe_vergadering.py
+DISCLAIMER_TIJDELIJK_PREFIX = "Deze transcriptie is automatisch gegenereerd door"
+
+
+def laad_gemeente_config(gemeente_id):
+    config_file = Path("gemeenten.json")
+    if config_file.exists():
+        config = json.loads(config_file.read_text())
+        for g in config["gemeenten"]:
+            if g["id"] == gemeente_id:
+                return g
+    # Fallback naar Texel defaults
+    return {
+        "id": "texel",
+        "naam": "Texel",
+        "ibabs_base": "https://texel.bestuurlijkeinformatie.nl",
+        "transcripties_dir": "docs/texel/transcripties",
+    }
 
 
 def log(msg):
@@ -52,41 +65,49 @@ def log(msg):
 
 
 def is_tijdelijk(transcript_path):
-    """Controleer of een transcriptie de tijdelijke (automatische) versie is."""
+    """
+    Tijdelijk = bevat de automatische disclaimer maar NIET de officiële.
+    Werkt voor bestaande bestanden (zonder disclaimer) én nieuwe bestanden.
+    """
     if not transcript_path.exists():
         return False
     tekst = transcript_path.read_text(encoding="utf-8")
-    return DISCLAIMER_TIJDELIJK[:50] in tekst
+    # Al officieel vervangen
+    if DISCLAIMER_OFFICIEEL[:50] in tekst:
+        return False
+    # Heeft de automatische disclaimer -> tijdelijk
+    if DISCLAIMER_TIJDELIJK_PREFIX in tekst:
+        return True
+    # Bestaande bestanden zonder disclaimer: ook als tijdelijk behandelen
+    return True
 
 
-def get_tijdelijke_transcripties():
+def get_tijdelijke_transcripties(transcripties_dir):
     """Geef lijst van date_ids met tijdelijke transcripties."""
-    if not TRANSCRIPTIES_DIR.exists():
+    if not transcripties_dir.exists():
+        log(f"  Map niet gevonden: {transcripties_dir}")
         return []
     tijdelijk = []
-    for f in TRANSCRIPTIES_DIR.glob("*.txt"):
+    for f in transcripties_dir.glob("*.txt"):
         if is_tijdelijk(f):
-            date_id = f.stem
-            tijdelijk.append(date_id)
+            tijdelijk.append(f.stem)
     return tijdelijk
 
 
-def get_ibabs_agenda_id(date_id):
+def get_ibabs_agenda_id(date_id, gemeente_id, ibabs_base):
     """Zoek de iBabs agenda-ID - eerst handmatige mapping, dan automatisch."""
-    if date_id in IBABS_ID_MAPPING:
-        log(f"  iBabs ID via mapping: {IBABS_ID_MAPPING[date_id]}")
-        return IBABS_ID_MAPPING[date_id]
+    sleutel = (gemeente_id, date_id)
+    if sleutel in IBABS_ID_MAPPING:
+        log(f"  iBabs ID via mapping: {IBABS_ID_MAPPING[sleutel]}")
+        return IBABS_ID_MAPPING[sleutel]
 
-    # Automatisch opzoeken via kalender
-    # Sla gevonden IDs op voor toekomstig gebruik
-    gevonden = _zoek_ibabs_id_automatisch(date_id)
+    gevonden = _zoek_ibabs_id_automatisch(date_id, ibabs_base)
     if gevonden:
-        # Voeg toe aan mapping voor volgende keer
-        IBABS_ID_MAPPING[date_id] = gevonden
+        IBABS_ID_MAPPING[sleutel] = gevonden
     return gevonden
 
 
-def _zoek_ibabs_id_automatisch(date_id):
+def _zoek_ibabs_id_automatisch(date_id, ibabs_base):
     """Zoek iBabs agenda-ID automatisch op basis van datum."""
     try:
         dt = datetime.strptime(date_id[:8], "%Y%m%d")
@@ -95,17 +116,13 @@ def _zoek_ibabs_id_automatisch(date_id):
         dag = dt.day
         maand_naam = MAANDEN[maand]
 
-        # Zoek in de kalender voor dit jaar/maand
-        url = f"{IBABS_BASE}/Calendar?year={jaar}&month={maand}"
+        url = f"{ibabs_base}/Calendar?year={jaar}&month={maand}"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
 
-        # Zoek alle agenda-IDs op de pagina
         alle_ids = list(set(re.findall(r'/Agenda/Index/([a-f0-9-]{36})', html)))
 
-        # Controleer elke ID op de juiste datum
-        # iBabs toont datums als "woensdag 18 februari 2026" of "18 februari 2026"
         datum_patronen = [
             f"{dag} {maand_naam} {jaar}",
             f"{dag:02d} {maand_naam} {jaar}",
@@ -113,7 +130,7 @@ def _zoek_ibabs_id_automatisch(date_id):
 
         for agenda_id in alle_ids[:15]:
             try:
-                page_url = f"{IBABS_BASE}/Agenda/Index/{agenda_id}"
+                page_url = f"{ibabs_base}/Agenda/Index/{agenda_id}"
                 req2 = urllib.request.Request(page_url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req2, timeout=10) as resp2:
                     page_html = resp2.read().decode("utf-8", errors="ignore")
@@ -131,18 +148,17 @@ def _zoek_ibabs_id_automatisch(date_id):
         return None
 
 
-def fetch_officiele_ondertiteling(agenda_id):
+def fetch_officiele_ondertiteling(agenda_id, ibabs_base):
     """
     Haal de officiële ondertiteling PDF op van bestuurlijkeinformatie.nl.
     Geeft (pdf_bytes, url) of (None, None) als niet beschikbaar.
     """
     try:
-        url = f"{IBABS_BASE}/Agenda/Index/{agenda_id}"
+        url = f"{ibabs_base}/Agenda/Index/{agenda_id}"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
 
-        # Zoek ondertiteling-links
         ondertiteling_ids = []
         for m in re.finditer(r'[Oo]ndertiteling.{0,200}?documentId=([a-f0-9-]{36})', html, re.DOTALL):
             ondertiteling_ids.append(m.group(1))
@@ -154,7 +170,7 @@ def fetch_officiele_ondertiteling(agenda_id):
             return None, None
 
         for doc_id in ondertiteling_ids[:2]:
-            pdf_url = f"{IBABS_BASE}/Agenda/Document/{agenda_id}?documentId={doc_id}"
+            pdf_url = f"{ibabs_base}/Agenda/Document/{agenda_id}?documentId={doc_id}"
             try:
                 req2 = urllib.request.Request(pdf_url, headers={"User-Agent": "Mozilla/5.0"})
                 with urllib.request.urlopen(req2, timeout=15) as resp2:
@@ -170,7 +186,7 @@ def fetch_officiele_ondertiteling(agenda_id):
         return None, None
 
 
-def parse_officiele_transcriptie(pdf_bytes, date_str, agenda_topics):
+def parse_officiele_transcriptie(pdf_bytes, gemeente_naam, date_str, agenda_topics):
     """
     Parseer de officiële ondertiteling PDF naar een gestructureerde transcriptie.
     """
@@ -193,9 +209,8 @@ def parse_officiele_transcriptie(pdf_bytes, date_str, agenda_topics):
 
         tekst = result.stdout.strip()
 
-        # Bouw het transcriptiebestand op
         lines = []
-        lines.append("RAADSVERGADERING TEXEL")
+        lines.append(f"RAADSVERGADERING {gemeente_naam.upper()}")
         lines.append(date_str)
         lines.append("=" * 60)
         lines.append("")
@@ -223,15 +238,14 @@ def parse_officiele_transcriptie(pdf_bytes, date_str, agenda_topics):
         return None
 
 
-def get_agenda_topics(agenda_id):
+def get_agenda_topics(agenda_id, ibabs_base):
     """Haal agendapunten op van de iBabs-pagina."""
     try:
-        url = f"{IBABS_BASE}/Agenda/Index/{agenda_id}"
+        url = f"{ibabs_base}/Agenda/Index/{agenda_id}"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             html = resp.read().decode("utf-8", errors="ignore")
 
-        # Zoek agendapunten
         topics = re.findall(r'<h3[^>]*>\s*([^<]{5,100}?)\s*</h3>', html)
         return [t.strip() for t in topics if t.strip()][:20]
     except Exception:
@@ -241,7 +255,12 @@ def get_agenda_topics(agenda_id):
 def main():
     log("=== Check Officiële Transcriptie ===")
 
-    tijdelijke = get_tijdelijke_transcripties()
+    gemeente = laad_gemeente_config(GEMEENTE_ID)
+    ibabs_base = gemeente["ibabs_base"]
+    transcripties_dir = Path(gemeente.get("transcripties_dir", f"docs/{GEMEENTE_ID}/transcripties"))
+    gemeente_naam = gemeente["naam"]
+
+    tijdelijke = get_tijdelijke_transcripties(transcripties_dir)
     if not tijdelijke:
         log("Geen tijdelijke transcripties gevonden")
         return
@@ -258,33 +277,28 @@ def main():
         except Exception:
             date_str = date_id[:8]
 
-        # iBabs agenda-ID ophalen
-        agenda_id = get_ibabs_agenda_id(date_id)
+        agenda_id = get_ibabs_agenda_id(date_id, GEMEENTE_ID, ibabs_base)
         if not agenda_id:
             log(f"  Geen iBabs agenda-ID gevonden voor {date_id}")
             continue
 
         log(f"  iBabs ID: {agenda_id}")
 
-        # Officiële ondertiteling ophalen
-        pdf_bytes, pdf_url = fetch_officiele_ondertiteling(agenda_id)
+        pdf_bytes, pdf_url = fetch_officiele_ondertiteling(agenda_id, ibabs_base)
         if not pdf_bytes:
             log(f"  Geen officiële ondertiteling beschikbaar (nog niet gepubliceerd)")
             continue
 
         log(f"  Officiële ondertiteling gevonden: {pdf_url}")
 
-        # Agendapunten ophalen
-        topics = get_agenda_topics(agenda_id)
+        topics = get_agenda_topics(agenda_id, ibabs_base)
 
-        # PDF parsen
-        transcriptie = parse_officiele_transcriptie(pdf_bytes, date_str, topics)
+        transcriptie = parse_officiele_transcriptie(pdf_bytes, gemeente_naam, date_str, topics)
         if not transcriptie:
             log(f"  PDF parsen mislukt")
             continue
 
-        # Tijdelijke transcriptie vervangen
-        transcript_path = TRANSCRIPTIES_DIR / f"{date_id}.txt"
+        transcript_path = transcripties_dir / f"{date_id}.txt"
         transcript_path.write_text(transcriptie, encoding="utf-8")
         log(f"  Tijdelijke transcriptie vervangen door officiële versie!")
         vervangen += 1
