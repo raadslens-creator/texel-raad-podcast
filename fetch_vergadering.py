@@ -388,9 +388,11 @@ def update_rss_feed(episodes, gemeente):
 
     items = ""
     for ep in episodes:
+        episode_link = ep.get('link', ibabs_link)
         items += f"""
   <item>
     <title>{ep['title']}</title>
+    <link>{episode_link}</link>
     <description><![CDATA[{ep.get('description', ep['title'])}]]></description>
     <pubDate>{ep.get('pub_date', '')}</pubDate>
     <enclosure url="{ep['audio_url']}" type="audio/mpeg" length="{ep.get('size', 0)}"/>
