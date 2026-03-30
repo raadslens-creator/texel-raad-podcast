@@ -32,13 +32,16 @@ def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+GEMEENTEN_CONFIG = {}
+
 def laad_gemeenten():
+    global GEMEENTEN_CONFIG
     config_file = Path("gemeenten.json")
     if not config_file.exists():
         log("FOUT: gemeenten.json niet gevonden")
         sys.exit(1)
-    config = json.loads(config_file.read_text())
-    return [g for g in config["gemeenten"] if g.get("actief", True)]
+    GEMEENTEN_CONFIG = json.loads(config_file.read_text())
+    return [g for g in GEMEENTEN_CONFIG["gemeenten"] if g.get("actief", True)]
 
 
 def parse_royalcast_timestamp(ts_str):
@@ -428,8 +431,8 @@ def verwerk_gemeente(gemeente, handmatige_ids=None):
         if not data:
             continue
 
-        # Filter op vergaderingstype
-        vergadering_typen = gemeente.get("vergadering_typen", [])
+        # Filter op vergaderingstype (gemeente-specifiek, anders global default)
+        vergadering_typen = gemeente.get("vergadering_typen") or GEMEENTEN_CONFIG.get("default_vergadering_typen", [])
         if vergadering_typen:
             titel = data.get("title", "")
             if not any(vtype.lower() in titel.lower() for vtype in vergadering_typen):
