@@ -17,7 +17,14 @@
       "repo": "raadslens-creator/raadslens",
       "check_days": 14,
       "actief": true,
-      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev"
+      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev",
+      "vanaf_datum": "20260319",
+      "vergadering_typen": [
+        "Raadsvergadering",
+        "Commissievergadering",
+        "Duidingsbijeenkomst",
+        "Bijzondere Raadsvergadering"
+      ]
     },
     {
       "id": "hollandskroon",
@@ -36,7 +43,15 @@
       "repo": "raadslens-creator/raadslens",
       "check_days": 45,
       "actief": true,
-      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev"
+      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev",
+      "vanaf_datum": "20260319",
+      "vergadering_typen": [
+        "Raadsvergadering",
+        "Commissievergadering",
+        "Beeldvormende vergadering",
+        "Oordeelsvormende vergadering",
+        "Bijzondere Raadsvergadering"
+      ]
     }
   ]
 }
