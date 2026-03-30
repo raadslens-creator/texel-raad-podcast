@@ -57,9 +57,12 @@ def get_candidate_ids(gemeente, handmatige_ids=None):
     ids = []
     today = datetime.now(timezone.utc)
     check_days = gemeente.get("check_days", 14)
+    vanaf_datum = gemeente.get("vanaf_datum", "")
     for days_ago in range(0, check_days):
         date = today - timedelta(days=days_ago)
         date_str = date.strftime("%Y%m%d")
+        if vanaf_datum and date_str < vanaf_datum:
+            continue
         for n in [1, 2, 3, 4]:
             ids.append(f"{date_str}_{n}")
     return ids
@@ -295,8 +298,6 @@ def build_shownotes(data, date_str, chapters, gemeente):
 
 def upload_to_r2(date_id, audio_file, gemeente):
     """Upload MP3 naar Cloudflare R2 en geef de publieke URL terug."""
-    import hmac, hashlib, datetime as dt_module
-
     access_key = os.environ.get("R2_ACCESS_KEY_ID", "")
     secret_key = os.environ.get("R2_SECRET_ACCESS_KEY", "")
     account_id = os.environ.get("R2_ACCOUNT_ID", "")
@@ -311,7 +312,6 @@ def upload_to_r2(date_id, audio_file, gemeente):
     object_key = f"{gemeente_id}/{date_id}.mp3"
     endpoint = f"https://{account_id}.r2.cloudflarestorage.com"
 
-    # AWS S3-compatible signing (R2 gebruikt AWS Signature Version 4)
     subprocess.run(["pip", "install", "boto3", "-q"], capture_output=True, check=False)
     import boto3
     from botocore.config import Config
@@ -346,7 +346,7 @@ def load_episodes(gemeente):
     for item in re.findall(r"<item>(.*?)</item>", content, re.DOTALL):
         title = re.search(r"<title>(.*?)</title>", item)
         guid = re.search(r"<guid[^>]*>(.*?)</guid>", item)
-        enc = re.search(r'<enclosure url="([^"]+)"[^/]*/>', item)
+        enc = re.search(r'<enclosure[^>]+url="([^"]+)"', item, re.DOTALL)
         pub = re.search(r"<pubDate>(.*?)</pubDate>", item)
         if title and guid and enc:
             desc = re.search(r"<description><!\[CDATA\[(.*?)\]\]></description>", item, re.DOTALL)
@@ -375,6 +375,7 @@ def update_rss_feed(episodes, gemeente):
 
     items = ""
     for ep in episodes:
+        episode_link = ep.get('link', ibabs_link)
         episode_link = ep.get('link', ibabs_link)
         items += f"""
   <item>
@@ -426,6 +427,14 @@ def verwerk_gemeente(gemeente, handmatige_ids=None):
         data = check_and_fetch_webcast(gemeente, date_id)
         if not data:
             continue
+
+        # Filter op vergaderingstype
+        vergadering_typen = gemeente.get("vergadering_typen", [])
+        if vergadering_typen:
+            titel = data.get("title", "")
+            if not any(vtype.lower() in titel.lower() for vtype in vergadering_typen):
+                log(f"  Overgeslagen: '{titel}' niet in vergadering_typen")
+                continue
 
         new_found = True
         try:
