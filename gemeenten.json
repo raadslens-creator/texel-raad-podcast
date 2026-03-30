@@ -16,7 +16,8 @@
       "ibabs_link": "https://texel.bestuurlijkeinformatie.nl/Calendar",
       "repo": "raadslens-creator/raadslens",
       "check_days": 14,
-      "actief": true
+      "actief": true,
+      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev"
     },
     {
       "id": "hollandskroon",
@@ -34,7 +35,8 @@
       "ibabs_link": "https://hollandskroon.bestuurlijkeinformatie.nl/Calendar",
       "repo": "raadslens-creator/raadslens",
       "check_days": 45,
-      "actief": true
+      "actief": true,
+      "r2_public_url": "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev"
     }
   ]
 }
