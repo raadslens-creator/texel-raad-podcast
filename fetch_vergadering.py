@@ -293,69 +293,48 @@ def build_shownotes(data, date_str, chapters, gemeente):
     return "\n".join(regels)
 
 
-def create_github_release(date_id, title, date_str, audio_file, gemeente):
-    repo = gemeente["repo"]
+def upload_to_r2(date_id, audio_file, gemeente):
+    """Upload MP3 naar Cloudflare R2 en geef de publieke URL terug."""
+    import hmac, hashlib, datetime as dt_module
+
+    access_key = os.environ.get("R2_ACCESS_KEY_ID", "")
+    secret_key = os.environ.get("R2_SECRET_ACCESS_KEY", "")
+    account_id = os.environ.get("R2_ACCOUNT_ID", "")
+    bucket = "raadslens-audio"
     gemeente_id = gemeente["id"]
-    if not GITHUB_TOKEN or not repo:
-        log("Geen GitHub token/repo")
+    r2_public_url = gemeente.get("r2_public_url", "https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev")
+
+    if not access_key or not secret_key or not account_id:
+        log("Geen R2 credentials gevonden (R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID)")
         return None
 
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-    }
-    tag = f"{gemeente_id}-{date_id}"
-    release_data = json.dumps({
-        "tag_name": tag,
-        "name": title,
-        "body": f"Vergadering {gemeente['naam']} - {date_str}",
-        "draft": False, "prerelease": False,
-    }).encode()
+    object_key = f"{gemeente_id}/{date_id}.mp3"
+    endpoint = f"https://{account_id}.r2.cloudflarestorage.com"
 
-    req = urllib.request.Request(
-        f"https://api.github.com/repos/{repo}/releases",
-        data=release_data, headers=headers, method="POST",
+    # AWS S3-compatible signing (R2 gebruikt AWS Signature Version 4)
+    subprocess.run(["pip", "install", "boto3", "-q"], capture_output=True, check=False)
+    import boto3
+    from botocore.config import Config
+
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        config=Config(signature_version="s3v4"),
+        region_name="auto",
     )
-    try:
-        with urllib.request.urlopen(req) as resp:
-            release = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        if e.code == 422:
-            log("Release bestaat al - bestaande ophalen...")
-            req2 = urllib.request.Request(
-                f"https://api.github.com/repos/{repo}/releases/tags/{tag}",
-                headers={"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
-            )
-            with urllib.request.urlopen(req2) as resp:
-                release = json.loads(resp.read())
-        else:
-            raise
 
-    upload_url = release["upload_url"].replace("{?name,label}", "")
-    log(f"Release: {release['html_url']}")
-
-    upload_headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "audio/mpeg",
-    }
-    with open(audio_file, "rb") as f:
-        audio_data = f.read()
-    req = urllib.request.Request(
-        f"{upload_url}?name={Path(audio_file).name}",
-        data=audio_data, headers=upload_headers, method="POST",
-    )
     try:
-        with urllib.request.urlopen(req) as resp:
-            asset = json.loads(resp.read())
-        log(f"MP3 geüpload: {asset['browser_download_url']}")
-        return asset["browser_download_url"]
-    except urllib.error.HTTPError as e:
-        if e.code == 422:
-            log("Asset bestaat al - release URL gebruiken")
-            return release.get("assets", [{}])[0].get("browser_download_url")
-        raise
+        with open(audio_file, "rb") as f:
+            s3.upload_fileobj(f, bucket, object_key,
+                ExtraArgs={"ContentType": "audio/mpeg"})
+        public_url = f"{r2_public_url}/{object_key}"
+        log(f"MP3 geüpload naar R2: {public_url}")
+        return public_url
+    except Exception as e:
+        log(f"R2 upload mislukt: {e}")
+        return None
 
 
 def load_episodes(gemeente):
@@ -370,10 +349,18 @@ def load_episodes(gemeente):
         enc = re.search(r'<enclosure url="([^"]+)"[^/]*/>', item)
         pub = re.search(r"<pubDate>(.*?)</pubDate>", item)
         if title and guid and enc:
+            desc = re.search(r"<description><!\[CDATA\[(.*?)\]\]></description>", item, re.DOTALL)
+            link = re.search(r"<link>(.*?)</link>", item)
+            dur = re.search(r"<itunes:duration>(.*?)</itunes:duration>", item)
+            size_m = re.search(r'length="(\d+)"', item)
             episodes.append({
                 "title": title.group(1), "id": guid.group(1),
                 "audio_url": enc.group(1),
                 "pub_date": pub.group(1) if pub else "",
+                "description": desc.group(1) if desc else "",
+                "link": link.group(1) if link else "",
+                "duration": dur.group(1) if dur else "",
+                "size": int(size_m.group(1)) if size_m else 0,
             })
     return episodes
 
@@ -482,7 +469,7 @@ def verwerk_gemeente(gemeente, handmatige_ids=None):
         except Exception:
             duration_str = ""
 
-        audio_url = create_github_release(date_id, full_title, date_str, processed, gemeente)
+        audio_url = upload_to_r2(date_id, processed, gemeente)
         if not audio_url:
             continue
 
