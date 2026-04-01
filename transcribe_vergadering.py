@@ -1519,7 +1519,7 @@ def main():
     log(f"Transcriptie opgeslagen: {transcript_file}")
 
     # Uploaden bij release
-    transcript_url = upload_transcript_to_release(date_id, transcript)
+    transcript_url = None  # upload naar GitHub Releases niet meer in gebruik
 
     # GitHub Issue aanmaken met twijfelgevallen
     if twijfels:
