@@ -10,7 +10,7 @@ from pathlib import Path
 
 GITHUB_TOKEN = os.environ.get("GH_TOKEN", "")
 SILENCE_THRESHOLD_DB = "-35dB"
-SILENCE_MIN_DURATION = 45
+SILENCE_MIN_DURATION = 90
 
 MAANDEN = {
     1: "januari", 2: "februari", 3: "maart", 4: "april",
@@ -209,6 +209,11 @@ def remove_silences(input_file, output_file):
     silences = [(float(s), float(e)) for s, e in zip(starts, ends) if float(e) - float(s) >= SILENCE_MIN_DURATION]
     log(f"{len(silences)} schorsingen gevonden")
 
+    # Schorsingen in de eerste 2 minuten negeren - dat is altijd intro, nooit echte schorsing
+    MIN_START_SEC = 120.0
+    silences = [(s, e) for s, e in silences if s >= MIN_START_SEC]
+    log(f"{len(silences)} schorsingen na intro-filter")
+
     if not silences:
         shutil.copy(input_file, output_file)
         return silences
@@ -345,26 +350,37 @@ def load_episodes(gemeente):
     episodes = []
     if not feed_file.exists():
         return episodes
-    content = feed_file.read_text()
-    for item in re.findall(r"<item>(.*?)</item>", content, re.DOTALL):
-        title = re.search(r"<title>(.*?)</title>", item)
-        guid = re.search(r"<guid[^>]*>(.*?)</guid>", item)
-        enc = re.search(r'<enclosure[^>]+url="([^"]+)"', item, re.DOTALL)
-        pub = re.search(r"<pubDate>(.*?)</pubDate>", item)
-        if title and guid and enc:
-            desc = re.search(r"<description><!\[CDATA\[(.*?)\]\]></description>", item, re.DOTALL)
-            link = re.search(r"<link>(.*?)</link>", item)
-            dur = re.search(r"<itunes:duration>(.*?)</itunes:duration>", item)
-            size_m = re.search(r'length="(\d+)"', item)
+    try:
+        import xml.etree.ElementTree as ET
+        tree = ET.parse(str(feed_file))
+        root = tree.getroot()
+        ns = {"itunes": "http://www.itunes.com/dtds/podcast-1.0.dtd"}
+        for item in root.findall(".//item"):
+            title = item.findtext("title", "")
+            guid = item.findtext("guid", "")
+            pub = item.findtext("pubDate", "")
+            link = item.findtext("link", "")
+            dur = item.findtext("itunes:duration", default="", namespaces=ns)
+            desc = item.findtext("description", "")
+            enc = item.find("enclosure")
+            if not title or not guid or enc is None:
+                continue
+            audio_url = enc.get("url", "")
+            size = int(enc.get("length", 0))
+            if not audio_url:
+                continue
             episodes.append({
-                "title": title.group(1), "id": guid.group(1),
-                "audio_url": enc.group(1),
-                "pub_date": pub.group(1) if pub else "",
-                "description": desc.group(1) if desc else "",
-                "link": link.group(1) if link else "",
-                "duration": dur.group(1) if dur else "",
-                "size": int(size_m.group(1)) if size_m else 0,
+                "title": title,
+                "id": guid,
+                "audio_url": audio_url,
+                "pub_date": pub,
+                "description": desc,
+                "link": link,
+                "duration": dur,
+                "size": size,
             })
+    except Exception as e:
+        log(f"Feed inlezen mislukt: {e}")
     return episodes
 
 
