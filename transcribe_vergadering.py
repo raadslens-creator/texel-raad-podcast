@@ -1465,7 +1465,24 @@ def main():
     # MP3 downloaden
     audio_file = download_mp3(mp3_url, date_id)
 
-    # Padding uitgeschakeld - veroorzaakte problemen met Whisper timestamps
+    # Voeg stille padding toe aan het begin zodat Whisper de allereerste woorden niet mist
+    padded_file = audio_file.replace(".mp3", "_padded.mp3")
+    import subprocess as sp
+    pad_cmd = [
+        "ffmpeg", "-y",
+        "-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono",
+        "-i", audio_file,
+        "-filter_complex", "[0:a]atrim=duration=10[silence];[silence][1:a]concat=n=2:v=0:a=1[out]",
+        "-map", "[out]",
+        "-codec:a", "libmp3lame", "-q:a", "4",
+        padded_file
+    ]
+    result = sp.run(pad_cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        audio_file = padded_file
+        log("10 seconden padding toegevoegd aan begin van MP3")
+    else:
+        log("Padding mislukt - origineel gebruiken")
 
     # Stiltes detecteren
     log("Stiltes detecteren voor timing-correctie...")
