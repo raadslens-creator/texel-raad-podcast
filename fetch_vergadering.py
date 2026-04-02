@@ -381,7 +381,16 @@ def load_episodes(gemeente):
             })
     except Exception as e:
         log(f"Feed inlezen mislukt: {e}")
-    return episodes
+    # Dedupliceer op guid
+    seen_guids = set()
+    unique = []
+    for ep in episodes:
+        if ep["id"] not in seen_guids:
+            seen_guids.add(ep["id"])
+            unique.append(ep)
+    if len(unique) < len(episodes):
+        log(f"  {len(episodes) - len(unique)} dubbele episode(s) verwijderd uit feed")
+    return unique
 
 
 def update_rss_feed(episodes, gemeente):
