@@ -34,6 +34,7 @@ jobs:
           pip install faster-whisper
           sudo apt-get update --fix-missing || true
           sudo apt-get install -y ffmpeg --fix-missing || true
+
       - name: Transcriberen (enkelvoudig)
         if: ${{ github.event.inputs.date_ids == '' }}
         env:
