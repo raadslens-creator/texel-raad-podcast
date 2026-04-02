@@ -1566,7 +1566,103 @@ def main():
     if twijfels:
         maak_github_issue(date_id, date_str, twijfels, transcript_url)
 
+    # Samenvattingen genereren via Claude API
+    genereer_samenvattingen(date_id, date_str, transcript, agenda_tekst)
+
     log("Klaar!")
+
+
+def genereer_samenvattingen(date_id, date_str, transcript, agenda_tekst=""):
+    """
+    Genereert twee samenvattingen via de Anthropic API op basis van het transcript.
+    INACTIEF totdat ANTHROPIC_API_KEY beschikbaar is als GitHub Secret.
+    - kort: 1-2 zinnen voor bij de podcast episode description
+    - uitgebreid: 3-5 zinnen voor op de website
+    Slaat op in docs/{gemeente_id}/samenvattingen/{date_id}.json
+    """
+    import urllib.request
+    import json
+
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        log("ANTHROPIC_API_KEY niet gevonden — samenvattingen overgeslagen (voeg secret toe om te activeren)")
+        return
+
+    gemeente_naam = GEMEENTE.get("naam", GEMEENTE_ID.capitalize())
+    model = "claude-haiku-4-5-20251001"
+
+    prompt = f"""Je bent een neutrale verslaggever voor Raadslens, een platform dat gemeenteraadsvergaderingen toegankelijk maakt voor inwoners van {gemeente_naam}.
+
+Genereer op basis van onderstaand transcript twee samenvattingen in het Nederlands.
+
+Regels:
+- Schrijf feitelijk en neutraal, geen waardeoordelen
+- Gebruik volledige namen bij eerste vermelding
+- Vermeld concrete besluiten als die er zijn
+- Begin niet met "In deze vergadering" of "Tijdens deze vergadering"
+- Datum: {date_str}, gemeente: {gemeente_naam}
+
+Reageer ALLEEN met geldig JSON, geen uitleg, geen markdown, geen code fences:
+{{"kort": "1-2 zinnen: de kern van de vergadering voor bij de podcast.", "uitgebreid": "3-5 zinnen: wat besproken en besloten is, wie sprak, wat de toon was."}}
+
+AGENDA:
+{agenda_tekst[:500] if agenda_tekst else "(niet beschikbaar)"}
+
+TRANSCRIPT (eerste 3000 tekens):
+{transcript[:3000]}"""
+
+    try:
+        data = json.dumps({
+            "model": "claude-haiku-4-5-20251001",
+            "max_tokens": 500,
+            "messages": [{"role": "user", "content": prompt}]
+        }).encode()
+
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=data,
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+            }
+        )
+
+        with urllib.request.urlopen(req, timeout=60) as r:
+            resp = json.loads(r.read())
+            text = resp["content"][0]["text"].strip()
+
+            # Strip eventuele markdown code fences
+            text = re.sub(r"^```(?:json)?\s*", "", text)
+            text = re.sub(r"\s*```$", "", text)
+
+            samenvattingen = json.loads(text)
+
+        if "kort" not in samenvattingen or "uitgebreid" not in samenvattingen:
+            log("Onverwachte JSON-structuur — samenvattingen overgeslagen")
+            return
+
+        # Opslaan
+        sam_dir = Path(f"docs/{GEMEENTE_ID}/samenvattingen")
+        sam_dir.mkdir(parents=True, exist_ok=True)
+        sam_file = sam_dir / f"{date_id}.json"
+        sam_file.write_text(json.dumps({
+            "date_id": date_id,
+            "datum": date_str,
+            "gemeente": GEMEENTE_ID,
+            "kort": samenvattingen["kort"],
+            "uitgebreid": samenvattingen["uitgebreid"],
+            "gegenereerd": datetime.utcnow().isoformat() + "Z",
+            "model": model,
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        log(f"Samenvattingen opgeslagen: {sam_file}")
+        log(f"  Kort: {samenvattingen['kort'][:80]}...")
+
+    except json.JSONDecodeError as e:
+        log(f"JSON parse fout in API response: {e} — samenvattingen overgeslagen")
+    except Exception as e:
+        log(f"Fout bij genereren samenvattingen: {e} — samenvattingen overgeslagen")
 
 
 if __name__ == "__main__":
