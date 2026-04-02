@@ -464,6 +464,18 @@ def verwerk_gemeente(gemeente, handmatige_ids=None):
                 log(f"  Overgeslagen: '{titel}' niet in vergadering_typen")
                 continue
 
+        # Filter op minimale starttijd (bijv. 18:30 voor avondvergaderingen)
+        min_starttijd_uur = gemeente.get("min_starttijd_uur", 0)
+        if min_starttijd_uur > 0:
+            actual_start_ms = parse_royalcast_timestamp(data.get("actualStart"))
+            if actual_start_ms:
+                start_dt = datetime.fromtimestamp(actual_start_ms, tz=timezone.utc)
+                if start_dt.hour < min_starttijd_uur:
+                    log(f"  Overgeslagen: vergadering start om {start_dt.hour:02d}:{start_dt.minute:02d} UTC (voor {min_starttijd_uur}:00)")
+                    seen.append(date_id)
+                    save_seen(gemeente, seen)
+                    continue
+
         new_found = True
         try:
             dt = datetime.strptime(date_id[:8], "%Y%m%d")
