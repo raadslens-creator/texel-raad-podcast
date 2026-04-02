@@ -209,10 +209,10 @@ def remove_silences(input_file, output_file):
     silences = [(float(s), float(e)) for s, e in zip(starts, ends) if float(e) - float(s) >= SILENCE_MIN_DURATION]
     log(f"{len(silences)} schorsingen gevonden")
 
-    # Schorsingen in de eerste 2 minuten negeren - dat is altijd intro, nooit echte schorsing
-    MIN_START_SEC = 120.0
-    silences = [(s, e) for s, e in silences if s >= MIN_START_SEC]
-    log(f"{len(silences)} schorsingen na intro-filter")
+    # Schorsingen die beginnen op 0s zijn intro-stilte - die knippen we weg
+    # Schorsingen na 120s die korter zijn dan 90s zijn spreekpauzes - die laten we staan
+    # (de min_duration van 90s zorgt al dat korte pauzes niet worden weggeknipt)
+    log(f"{len(silences)} schorsingen na detectie")
 
     if not silences:
         shutil.copy(input_file, output_file)
