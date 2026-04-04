@@ -54,7 +54,14 @@
       "raadsperiode": "2026-2030",
       "burgemeester": null,
       "coalitie": null,
-      "wethouders": []
+      "wethouders": [],
+      "vergadering_typen": [
+        "Raad",
+        "Raadsvergadering",
+        "Commissie",
+        "Beeldvormend",
+        "Oordeelsvormend"
+      ]
     },
     {
       "id": "rotterdam",
@@ -103,6 +110,7 @@
     }
   ],
   "default_vergadering_typen": [
+    "Raad",
     "Raadsvergadering",
     "Commissie",
     "Beeldvormend",
