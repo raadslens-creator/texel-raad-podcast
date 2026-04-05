@@ -424,7 +424,13 @@ def update_rss_feed(episodes, gemeente):
   <description>{beschrijving}</description>
   <link>{ibabs_link}</link>
   <language>nl</language>
+  <managingEditor>raadslens@gmail.com (Raadslens)</managingEditor>
+  <webMaster>raadslens@gmail.com (Raadslens)</webMaster>
   <itunes:author>Raadslens</itunes:author>
+  <itunes:owner>
+    <itunes:name>Raadslens</itunes:name>
+    <itunes:email>raadslens@gmail.com</itunes:email>
+  </itunes:owner>
   <itunes:summary>{beschrijving}</itunes:summary>
   <itunes:image href="{logo_url}"/>
   <image>
