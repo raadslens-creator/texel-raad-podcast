@@ -128,14 +128,14 @@ def get_chapter_times(data, actual_start_sec):
 
 
 def load_seen(gemeente):
-    seen_file = Path(gemeente["seen_file"])
+    seen_file = Path(gemeente.get("seen_file", f"docs/{gemeente['id']}/seen.json"))
     if seen_file.exists():
         return json.loads(seen_file.read_text())
     return []
 
 
 def save_seen(gemeente, seen):
-    seen_file = Path(gemeente["seen_file"])
+    seen_file = Path(gemeente.get("seen_file", f"docs/{gemeente['id']}/seen.json"))
     seen_file.parent.mkdir(parents=True, exist_ok=True)
     seen_file.write_text(json.dumps(seen, indent=2))
 
@@ -299,7 +299,7 @@ def build_shownotes(data, date_str, chapters, gemeente):
             ts = f"{h}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
             regels.append(f"• {ts} {ch['titel']}")
 
-    verantwoording = VERANTWOORDING_TEMPLATE.format(ibabs_link=gemeente["ibabs_link"])
+    verantwoording = VERANTWOORDING_TEMPLATE.format(ibabs_link=gemeente.get("ibabs_link", f"https://{gemeente['id']}.bestuurlijkeinformatie.nl/Calendar"))
     regels.append(f"\n{verantwoording}")
     return "\n".join(regels)
 
@@ -346,7 +346,7 @@ def upload_to_r2(date_id, audio_file, gemeente):
 
 
 def load_episodes(gemeente):
-    feed_file = Path(gemeente["feed_file"])
+    feed_file = Path(gemeente.get("feed_file", f"docs/{gemeente['id']}/feed.xml"))
     episodes = []
     if not feed_file.exists():
         return episodes
@@ -394,12 +394,12 @@ def load_episodes(gemeente):
 
 
 def update_rss_feed(episodes, gemeente):
-    feed_file = Path(gemeente["feed_file"])
+    feed_file = Path(gemeente.get("feed_file", f"docs/{gemeente['id']}/feed.xml"))
     feed_file.parent.mkdir(parents=True, exist_ok=True)
-    logo_url = gemeente["logo_url"]
-    ibabs_link = gemeente["ibabs_link"]
-    podcast_titel = gemeente["podcast_titel"]
-    beschrijving = gemeente["podcast_beschrijving"]
+    logo_url = gemeente.get("logo_url", f"https://raadslens-creator.github.io/raadslens/{gemeente['id']}/logo-{gemeente['id']}.png")
+    ibabs_link = gemeente.get("ibabs_link", f"https://{gemeente['id']}.bestuurlijkeinformatie.nl/Calendar")
+    podcast_titel = gemeente.get("podcast_titel", f"Raadslens {gemeente.get('naam', gemeente['id'].capitalize())}")
+    beschrijving = gemeente.get("podcast_beschrijving", f"Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van {gemeente.get('naam', gemeente['id'].capitalize())} automatisch om naar een podcast.")
 
     items = ""
     for ep in episodes:
