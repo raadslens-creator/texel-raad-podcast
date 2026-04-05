@@ -2,11 +2,17 @@
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
   <title>Raadslens Texel</title>
-  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten.</description>
+  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Texel automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</description>
   <link>https://texel.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
+  <managingEditor>raadslens@gmail.com (Raadslens)</managingEditor>
+  <webMaster>raadslens@gmail.com (Raadslens)</webMaster>
   <itunes:author>Raadslens</itunes:author>
-  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de Texelse gemeenteraad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder drie uur voor een scherm te zitten.</itunes:summary>
+  <itunes:owner>
+    <itunes:name>Raadslens</itunes:name>
+    <itunes:email>raadslens@gmail.com</itunes:email>
+  </itunes:owner>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Texel automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</itunes:summary>
   <itunes:image href="https://raadslens-creator.github.io/raadslens/logo-texel.png"/>
   <image>
     <url>https://raadslens-creator.github.io/raadslens/logo-texel.png</url>
@@ -48,7 +54,7 @@ Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></descrip
     <itunes:duration>0:23:59</itunes:duration>
     <itunes:image href="https://raadslens-creator.github.io/raadslens/logo-texel.png"/>
   </item>
-  <item>
+    <item>
     <title>Raadsvergadering 31-03-2026</title>
     <link>https://texel.bestuurlijkeinformatie.nl/Agenda/Index/c15f1ab0-f3b1-4d9c-ae6e-07ab8b1ce32b</link>
     <description><![CDATA[Vergadering gemeente Texel - 31 maart 2026
@@ -79,7 +85,7 @@ Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></descrip
     <itunes:duration>1:09:17</itunes:duration>
     <itunes:image href="https://raadslens-creator.github.io/raadslens/logo-texel.png"/>
   </item>
-  <item>
+    <item>
     <title>Raadsvergadering 23-03-2026</title>
     <link>https://texel.bestuurlijkeinformatie.nl/Agenda/Index/4a8be1a5-97dd-4d90-b90c-7aa780c893f3</link>
     <description><![CDATA[Vergadering gemeente Texel - 23 maart 2026
@@ -114,5 +120,6 @@ Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></descrip
     <itunes:duration>0:29:15</itunes:duration>
     <itunes:image href="https://raadslens-creator.github.io/raadslens/logo-texel.png"/>
   </item>
+
 </channel>
 </rss>
