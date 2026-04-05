@@ -22,6 +22,31 @@
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
   <item>
+    <title>Duidingsdebat 26-03-2026</title>
+    <link>https://zaanstad.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Zaanstad - 26 maart 2026
+
+Agenda:
+• Presentatie uitslagvaststelling CSB
+
+Hoofdstukken:
+• 00:00 Presentatie uitslagvaststelling CSB
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://zaanstad.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Thu, 26 Mar 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/zaanstad/20260326_2.mp3" type="audio/mpeg" length="36747393"/>
+    <guid isPermaLink="false">zaanstad-20260326_2</guid>
+    <itunes:duration>1:09:47</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/zaanstad/logo-zaanstad.png"/>
+  </item>
+  <item>
     <title>Raadsvergadering 31-03-2026</title>
     <link>https://zaanstad.bestuurlijkeinformatie.nl/Calendar</link>
     <description><![CDATA[Vergadering gemeente Zaanstad - 31 maart 2026
