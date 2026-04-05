@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
   <title>Raadslens Zaanstad</title>
-  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Zaanstad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</description>
+  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Zaanstad automatisch om naar een podcast.</description>
   <link>https://zaanstad.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
   <managingEditor>raadslens@gmail.com (Raadslens)</managingEditor>
@@ -12,7 +12,7 @@
     <itunes:name>Raadslens</itunes:name>
     <itunes:email>raadslens@gmail.com</itunes:email>
   </itunes:owner>
-  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Zaanstad automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</itunes:summary>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Zaanstad automatisch om naar een podcast.</itunes:summary>
   <itunes:image href="https://raadslens-creator.github.io/raadslens/zaanstad/logo-zaanstad.png"/>
   <image>
     <url>https://raadslens-creator.github.io/raadslens/zaanstad/logo-zaanstad.png</url>
@@ -21,5 +21,73 @@
   </image>
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
+  <item>
+    <title>Raadsvergadering 31-03-2026</title>
+    <link>https://zaanstad.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Zaanstad - 31 maart 2026
+
+Agenda:
+• 1 Opening en mededelingen
+• 2 Vaststellen van de agenda
+• 3 Stemmingen
+• 3.1 Aanwijzen waarnemend raadsgriffier
+• 4 Bevindingen commissie geloofsbrieven nieuwe Raad
+• 5 Afscheid van de raadsleden en steunfractieleden, toespraak door de Voorzitter
+• 6 Sluiting
+
+Hoofdstukken:
+• 01:49 1 Opening en mededelingen
+• 02:41 2 Vaststellen van de agenda
+• 03:41 3 Stemmingen
+• 03:35 3.1 Aanwijzen waarnemend raadsgriffier
+• 05:53 4 Bevindingen commissie geloofsbrieven nieuwe Raad
+• 08:35 5 Afscheid van de raadsleden en steunfractieleden, toespraak door de Voorzitter
+• 09:35 6 Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://zaanstad.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Tue, 31 Mar 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/zaanstad/20260331_2.mp3" type="audio/mpeg" length="78374928"/>
+    <guid isPermaLink="false">zaanstad-20260331_2</guid>
+    <itunes:duration>2:11:28</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/zaanstad/logo-zaanstad.png"/>
+  </item>
+  <item>
+    <title>Raadsvergadering 01-04-2026</title>
+    <link>https://zaanstad.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Zaanstad - 1 april 2026
+
+Agenda:
+• 1 Opening en mededelingen
+• 2 Vaststellen van de agenda
+• 3 Afleggen eed of belofte door de nieuwe raadsleden
+• 4 Sluiting
+
+Hoofdstukken:
+• 01:22 1 Opening en mededelingen
+• 02:51 2 Vaststellen van de agenda
+• 02:51 3 Afleggen eed of belofte door de nieuwe raadsleden
+• 18:27 4 Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://zaanstad.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Wed, 01 Apr 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/zaanstad/20260401_1.mp3" type="audio/mpeg" length="11641205"/>
+    <guid isPermaLink="false">zaanstad-20260401_1</guid>
+    <itunes:duration>0:19:29</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/zaanstad/logo-zaanstad.png"/>
+  </item>
 </channel>
 </rss>

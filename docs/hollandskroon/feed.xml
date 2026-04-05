@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
   <title>Raadslens Hollands Kroon</title>
-  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</description>
+  <description>Lokale democratie in je oren. Raadslens zet vergaderingen van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder uren voor een scherm te zitten.</description>
   <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
   <managingEditor>raadslens@gmail.com (Raadslens)</managingEditor>
@@ -12,7 +12,7 @@
     <itunes:name>Raadslens</itunes:name>
     <itunes:email>raadslens@gmail.com</itunes:email>
   </itunes:owner>
-  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</itunes:summary>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet vergaderingen van de gemeenteraad van Hollands Kroon automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt. Onderweg, tijdens het sporten, of gewoon thuis. Blijf op de hoogte van wat er speelt in jouw gemeente, zonder uren voor een scherm te zitten.</itunes:summary>
   <itunes:image href="https://raadslens-creator.github.io/raadslens/hollandskroon/logo-hollandskroon.png"/>
   <image>
     <url>https://raadslens-creator.github.io/raadslens/hollandskroon/logo-hollandskroon.png</url>
@@ -21,5 +21,79 @@
   </image>
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
+  <item>
+    <title>Raad 31-03-2026</title>
+    <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Hollands Kroon - 31 maart 2026
+
+Agenda:
+• A.1 Opening
+• A.2 Mededelingen voorzitter
+• B Oordeelvormend
+• B.1 Vaststellen agenda oordeelvormend gedeelte
+• C Besluitvormend
+• C.1 Agenda besluitvormend gedeelte
+• C.2 Loting volgnummer in verband met hoofdelijke stemming
+• C.3 Verslag raadsvergadering 17 februari 2026
+• C.4 Wijze van afdoening ingekomen stukken
+• C.5 Raadsvoorstel Rechtmatigheid verkiezingen en toelating nieuwbenoemde leden (volgt)
+• D Sluiting
+
+Hoofdstukken:
+• 00:00 A.1 Opening
+• 00:00 A.2 Mededelingen voorzitter
+• 00:00 B Oordeelvormend
+• 00:57 B.1 Vaststellen agenda oordeelvormend gedeelte
+• 01:57 C Besluitvormend
+• 02:57 C.1 Agenda besluitvormend gedeelte
+• 03:57 C.2 Loting volgnummer in verband met hoofdelijke stemming
+• 04:57 C.3 Verslag raadsvergadering 17 februari 2026
+• 05:57 C.4 Wijze van afdoening ingekomen stukken
+• 06:57 C.5 Raadsvoorstel Rechtmatigheid verkiezingen en toelating nieuwbenoemde leden (
+• 07:57 D Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://hollandskroon.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Tue, 31 Mar 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/hollandskroon/20260331_1.mp3" type="audio/mpeg" length="68560125"/>
+    <guid isPermaLink="false">hollandskroon-20260331_1</guid>
+    <itunes:duration>1:37:50</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/hollandskroon/logo-hollandskroon.png"/>
+  </item>
+  <item>
+    <title>Raad 01-04-2026</title>
+    <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Hollands Kroon - 1 april 2026
+
+Agenda:
+• A Feestelijke Opening en toespraak door de burgemeester
+• A.1 Afleggen eed of belofte door raadsleden
+• D Sluiting
+
+Hoofdstukken:
+• 00:00 A Feestelijke Opening en toespraak door de burgemeester
+• 01:00 A.1 Afleggen eed of belofte door raadsleden
+• 02:00 D Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://hollandskroon.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Wed, 01 Apr 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/hollandskroon/20260401_1.mp3" type="audio/mpeg" length="13747592"/>
+    <guid isPermaLink="false">hollandskroon-20260401_1</guid>
+    <itunes:duration>0:28:36</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/hollandskroon/logo-hollandskroon.png"/>
+  </item>
 </channel>
 </rss>
