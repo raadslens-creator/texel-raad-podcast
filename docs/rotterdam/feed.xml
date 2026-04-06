@@ -2,8 +2,8 @@
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
 <channel>
   <title>Raadslens Rotterdam</title>
-  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Rotterdam automatisch om naar een podcast.</description>
-  <link>https://rotterdam.bestuurlijkeinformatie.nl/Calendar</link>
+  <description>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Rotterdam automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</description>
+  <link>https://rotterdamraad.bestuurlijkeinformatie.nl/Calendar</link>
   <language>nl</language>
   <managingEditor>raadslens@gmail.com (Raadslens)</managingEditor>
   <webMaster>raadslens@gmail.com (Raadslens)</webMaster>
@@ -12,106 +12,14 @@
     <itunes:name>Raadslens</itunes:name>
     <itunes:email>raadslens@gmail.com</itunes:email>
   </itunes:owner>
-  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Rotterdam automatisch om naar een podcast.</itunes:summary>
-  <itunes:image href="https://raadslens-creator.github.io/raadslens/rotterdam/logo-rotterdam.png"/>
+  <itunes:summary>Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van Rotterdam automatisch om naar een podcast - zodat je kunt luisteren wanneer het jou uitkomt.</itunes:summary>
+  <itunes:image href="https://raadslens-creator.github.io/raadslens/logo-rotterdam.png"/>
   <image>
-    <url>https://raadslens-creator.github.io/raadslens/rotterdam/logo-rotterdam.png</url>
+    <url>https://raadslens-creator.github.io/raadslens/logo-rotterdam.png</url>
     <title>Raadslens Rotterdam</title>
-    <link>https://rotterdam.bestuurlijkeinformatie.nl/Calendar</link>
+    <link>https://rotterdamraad.bestuurlijkeinformatie.nl/Calendar</link>
   </image>
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
-  <item>
-    <title>Gemeenteraad 30-03-2026</title>
-    <link>https://rotterdam.bestuurlijkeinformatie.nl/Calendar</link>
-    <description><![CDATA[Vergadering gemeente Rotterdam - 30 maart 2026
-
-Agenda:
-• 1 Opening en mededelingen.
-• 2 Vaststelling van de agenda voor de buitengewone raadsvergadering van 30 maart 2026.
-• 3 Vaststelling van de notulen van de openbare raadsvergadering van 26 februari 2026.
-• 4 Mededeling van de ingekomen stukken aan de raad en de commissies, zoals genoemd op de digitale doorlopende lijst 2026 weken 9 t/m 13.
-• 5 Verkiezingsaangelegenheden.
-• 5.1 Advies met betrekking tot het verloop van de verkiezingen van 18 maart 2026.
-• 5.2 Onderzoek van de geloofsbrieven en besluit tot toelating van de leden van de gemeenteraad.
-• 6 Afsluiting van de raadsperiode 2022-2026.
-• 7 Sluiting.
-
-Hoofdstukken:
-• 00:00 1 Opening en mededelingen.
-• 30:44 2 Vaststelling van de agenda voor de buitengewone raadsvergadering van 30 maart 
-• 32:01 3 Vaststelling van de notulen van de openbare raadsvergadering van 26 februari 2
-• 32:11 4 Mededeling van de ingekomen stukken aan de raad en de commissies, zoals genoem
-• 32:44 5 Verkiezingsaangelegenheden.
-• 32:47 5.1 Advies met betrekking tot het verloop van de verkiezingen van 18 maart 2026.
-• 32:57 5.2 Onderzoek van de geloofsbrieven en besluit tot toelating van de leden van de
-• 38:15 6 Afsluiting van de raadsperiode 2022-2026.
-• 2:58:20 7 Sluiting.
-
----
-Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
-
-De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://rotterdam.bestuurlijkeinformatie.nl/Calendar.
-
-Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
-
-Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
-    <pubDate>Mon, 30 Mar 2026 03:00:00 +0000</pubDate>
-    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/rotterdam/20260330_1.mp3" type="audio/mpeg" length="86651930"/>
-    <guid isPermaLink="false">rotterdam-20260330_1</guid>
-    <itunes:duration>3:00:20</itunes:duration>
-    <itunes:image href="https://raadslens-creator.github.io/raadslens/rotterdam/logo-rotterdam.png"/>
-  </item>
-  <item>
-    <title>Gemeenteraad 01-04-2026</title>
-    <link>https://rotterdam.bestuurlijkeinformatie.nl/Calendar</link>
-    <description><![CDATA[Vergadering gemeente Rotterdam - 1 april 2026
-
-Agenda:
-• 1 Opening en mededelingen.
-• 2 Beëdiging van de leden van de gemeenteraad.
-• 3 Installatierede van de burgemeester.
-• 4 Vaststelling van de agenda voor de buitengewone raadsvergadering van 1 april 2026.
-• 5 Het voorstel tot benoeming van plaatsvervangend voorzitters van de gemeenteraad.
-• 6 Het voorstel tot het aanwijzen van de nestor van de gemeenteraad.
-• 7 Het voorstel tot het aanwijzen van een voorzitter, leden en plaatsvervangend leden van de commissie tot onderzoek van de geloofsbrieven.
-• 8.1 Toelating van mevrouw E.M. (Ellen) Verouden als burgercommissielid.
-• 8.2 Beëdiging van mevrouw E.M. (Ellen) Verouden als burgercommissielid.
-• 8.3 Het voorstel tot het benoemen van een voorzitter en vier leden van de commissie tot onderzoek van de rekening.
-• 9 Het voorstel tot het instellen van vijf raadscommissies voor de periode 2026-2030.
-• 10 Het voorstel tot het benoemen van commissievoorzitters.
-• 11 Het voorstel tot benoeming van een voorzitter en vier leden van de werkgeverscommissie.
-• 13 Sluiting.
-
-Hoofdstukken:
-• 00:00 1 Opening en mededelingen.
-• 21:12 2 Beëdiging van de leden van de gemeenteraad.
-• 31:20 3 Installatierede van de burgemeester.
-• 39:01 4 Vaststelling van de agenda voor de buitengewone raadsvergadering van 1 april 2
-• 41:54 5 Het voorstel tot benoeming van plaatsvervangend voorzitters van de gemeenteraa
-• 42:44 6 Het voorstel tot het aanwijzen van de nestor van de gemeenteraad.
-• 43:39 7 Het voorstel tot het aanwijzen van een voorzitter, leden en plaatsvervangend l
-• 44:42 8.1 Toelating van mevrouw E.M. (Ellen) Verouden als burgercommissielid.
-• 46:06 8.2 Beëdiging van mevrouw E.M. (Ellen) Verouden als burgercommissielid.
-• 48:08 8.3 Het voorstel tot het benoemen van een voorzitter en vier leden van de commis
-• 48:58 9 Het voorstel tot het instellen van vijf raadscommissies voor de periode 2026-2
-• 57:15 10 Het voorstel tot het benoemen van commissievoorzitters.
-• 1:05:38 11 Het voorstel tot benoeming van een voorzitter en vier leden van de werkgevers
-• 1:06:13 13 Sluiting.
-
----
-Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
-
-De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://rotterdam.bestuurlijkeinformatie.nl/Calendar.
-
-Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
-
-Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
-    <pubDate>Wed, 01 Apr 2026 03:00:00 +0000</pubDate>
-    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/rotterdam/20260401_1.mp3" type="audio/mpeg" length="33977168"/>
-    <guid isPermaLink="false">rotterdam-20260401_1</guid>
-    <itunes:duration>1:07:47</itunes:duration>
-    <itunes:image href="https://raadslens-creator.github.io/raadslens/rotterdam/logo-rotterdam.png"/>
-  </item>
 </channel>
 </rss>
