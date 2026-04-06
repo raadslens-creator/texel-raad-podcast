@@ -1,0 +1,11 @@
+{
+  "gemeente": "zaanstad",
+  "ibabs_base": "https://zaanstad.bestuurlijkeinformatie.nl",
+  "raadsperiode": "2026-2030",
+  "burgemeester": null,
+  "raadsleden": {},
+  "commissieleden": {},
+  "coalitie": null,
+  "wethouders": [],
+  "scrape_timestamp": "2026-04-06T08:58:27.082141Z"
+}
