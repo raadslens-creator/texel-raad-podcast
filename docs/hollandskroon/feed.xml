@@ -22,6 +22,35 @@
   <itunes:category text="Government"/>
   <itunes:explicit>false</itunes:explicit>
   <item>
+    <title>Raad 01-04-2026</title>
+    <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
+    <description><![CDATA[Vergadering gemeente Hollands Kroon - 1 april 2026
+
+Agenda:
+• A Feestelijke Opening en toespraak door de burgemeester
+• A.1 Afleggen eed of belofte door raadsleden
+• D Sluiting
+
+Hoofdstukken:
+• 00:00 A Feestelijke Opening en toespraak door de burgemeester
+• 01:00 A.1 Afleggen eed of belofte door raadsleden
+• 02:00 D Sluiting
+
+---
+Raadslens maakt lokale democratie toegankelijk. We zetten raadsvergaderingen automatisch om naar een podcast.
+
+De verwerking gebeurt volledig automatisch. Wij zijn niet verantwoordelijk voor de inhoud van de vergadering zelf. De originele uitzending vind je op https://hollandskroon.bestuurlijkeinformatie.nl/Calendar.
+
+Raadslens is een onafhankelijk initiatief, zonder politieke kleur en zonder commercieel belang.
+
+Vragen, feedback of een fout gevonden? Mail naar raadslens@gmail.com]]></description>
+    <pubDate>Wed, 01 Apr 2026 03:00:00 +0000</pubDate>
+    <enclosure url="https://pub-adbd8382dc214647bb3e307524dd94d6.r2.dev/hollandskroon/20260401_1.mp3" type="audio/mpeg" length="13747592"/>
+    <guid isPermaLink="false">hollandskroon-20260401_1</guid>
+    <itunes:duration>0:28:36</itunes:duration>
+    <itunes:image href="https://raadslens-creator.github.io/raadslens/hollandskroon/logo-hollandskroon.png"/>
+  </item>
+  <item>
     <title>Raad 31-03-2026</title>
     <link>https://hollandskroon.bestuurlijkeinformatie.nl/Calendar</link>
     <description><![CDATA[Vergadering gemeente Hollands Kroon - 31 maart 2026
