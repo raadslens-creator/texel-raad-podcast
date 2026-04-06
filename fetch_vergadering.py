@@ -396,7 +396,7 @@ def load_episodes(gemeente):
 def update_rss_feed(episodes, gemeente):
     feed_file = Path(gemeente.get("feed_file", f"docs/{gemeente['id']}/feed.xml"))
     feed_file.parent.mkdir(parents=True, exist_ok=True)
-    logo_url = gemeente.get("logo_url", f"https://raadslens-creator.github.io/raadslens/{gemeente['id']}/logo-{gemeente['id']}.png")
+    logo_url = gemeente.get("logo_url", f"https://raadslens-creator.github.io/raadslens/logo-{gemeente['id']}.png")
     ibabs_link = gemeente.get("ibabs_link", f"https://{gemeente['id']}.bestuurlijkeinformatie.nl/Calendar")
     podcast_titel = gemeente.get("podcast_titel", f"Raadslens {gemeente.get('naam', gemeente['id'].capitalize())}")
     beschrijving = gemeente.get("podcast_beschrijving", f"Lokale democratie in je oren. Raadslens zet elke vergadering van de gemeenteraad van {gemeente.get('naam', gemeente['id'].capitalize())} automatisch om naar een podcast.")
