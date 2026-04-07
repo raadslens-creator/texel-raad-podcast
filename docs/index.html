@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Raadslens — Lokale democratie in je oren</title>
+<meta name="description" content="Raadslens zet gemeenteraadsvergaderingen automatisch om naar podcasts. Volg jouw gemeente — gratis, onafhankelijk, elke vergadering als podcast.">
+<meta name="keywords" content="gemeenteraad, podcast, lokale democratie, raadsvergadering, transparantie, raadslens">
+<meta name="author" content="Raadslens">
+<link rel="canonical" href="https://raadslens.nl">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://raadslens.nl">
+<meta property="og:title" content="Raadslens — Lokale democratie in je oren">
+<meta property="og:description" content="Raadslens zet gemeenteraadsvergaderingen automatisch om naar podcasts. Volg jouw gemeente — gratis en onafhankelijk.">
+<meta property="og:image" content="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:site_name" content="Raadslens">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Raadslens — Lokale democratie in je oren">
+<meta name="twitter:description" content="Gemeenteraadsvergaderingen als podcast. Gratis, onafhankelijk.">
+<meta name="twitter:image" content="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+
+<link rel="icon" type="image/png" href="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Raadslens",
+  "url": "https://raadslens.nl",
+  "logo": "https://raadslens-creator.github.io/raadslens/logo-raadslens.png",
+  "description": "Raadslens zet gemeenteraadsvergaderingen automatisch om naar podcasts.",
+  "email": "raadslens@gmail.com",
+  "sameAs": ["https://github.com/raadslens-creator/raadslens"]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#2c1a0e;--ink2:#5a3e2b;--ink3:#9a7e6a;
+  --bg:#faf7f2;--bg2:#f2ede4;--bg3:#e8e0d4;
+  --warm:#7a3b10;--warm2:#9a5020;--warm-p:#f8f0e8;
+  --bdr:rgba(44,26,14,0.09);--bdr2:rgba(44,26,14,0.15);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65}
+
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:62px;border-bottom:0.5px solid var(--bdr2);background:var(--bg)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:0.5px solid var(--bdr2)}
+.brand-name{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--ink);letter-spacing:0.03em}
+.nav-r{display:flex;gap:2rem;align-items:center}
+.nav-a{font-size:13px;color:var(--ink3);text-decoration:none;font-weight:300;transition:color 0.2s}
+.nav-a:hover{color:var(--ink)}
+.nav-btn{font-size:12px;font-weight:500;color:var(--warm);text-decoration:none;border:0.5px solid var(--warm);padding:6px 14px;border-radius:3px;letter-spacing:0.04em;text-transform:uppercase;transition:all 0.18s;font-family:var(--sans)}
+.nav-btn:hover{background:var(--warm);color:white}
+
+.hero{background:var(--bg2);border-bottom:0.5px solid var(--bdr2);position:relative;overflow:hidden}
+.hero-accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--warm)}
+.hero-in{max-width:960px;margin:0 auto;padding:6rem 2.5rem 5rem;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.eyebrow{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm);font-weight:500;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:block;width:20px;height:1px;background:var(--warm)}
+.hero h1{font-family:var(--serif);font-size:clamp(38px,5.5vw,60px);font-weight:300;line-height:1.08;color:var(--ink);margin-bottom:1.5rem;letter-spacing:-0.01em}
+.hero h1 em{font-style:italic;color:var(--warm)}
+.hero-sub{font-size:15px;color:var(--ink2);line-height:1.85;font-weight:300;margin-bottom:2.5rem;max-width:440px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:3px;font-size:12px;font-weight:500;text-decoration:none;cursor:pointer;font-family:var(--sans);letter-spacing:0.05em;text-transform:uppercase;border:none;transition:all 0.18s}
+.btn-primary{background:var(--warm);color:white}.btn-primary:hover{background:var(--warm2)}
+.btn-ghost{background:transparent;color:var(--ink2);border:0.5px solid var(--bdr2)}.btn-ghost:hover{background:var(--bg3)}
+.hero-right{display:flex;flex-direction:column;gap:1.25rem}
+.pijler{padding:1.5rem;background:var(--bg);border:0.5px solid var(--bdr2);border-radius:6px}
+.pijler-num{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--warm);line-height:1;margin-bottom:6px}
+.pijler-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.pijler-text{font-size:13px;color:var(--ink3);line-height:1.6;font-weight:300}
+
+.section{max-width:960px;margin:0 auto;padding:4rem 2.5rem}
+.section-head{margin-bottom:2rem}
+.section-title{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--ink);margin-bottom:0.5rem}
+.section-sub{font-size:14px;color:var(--ink3);font-weight:300}
+.gemeenten-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.gemeente-card{display:block;text-decoration:none;padding:1.5rem;background:var(--bg);border:0.5px solid var(--bdr2);border-radius:6px;transition:all 0.18s;position:relative}
+.gemeente-card:hover{border-color:var(--warm);background:var(--warm-p);transform:translateY(-2px)}
+.gemeente-logo{width:48px;height:48px;border-radius:50%;object-fit:cover;margin-bottom:1rem;border:0.5px solid var(--bdr)}
+.gemeente-naam{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--ink);margin-bottom:4px}
+.gemeente-meta{font-size:12px;color:var(--ink3);font-weight:300}
+.gemeente-arrow{position:absolute;top:1.5rem;right:1.5rem;font-size:16px;color:var(--bdr2);transition:color 0.18s}
+.gemeente-card:hover .gemeente-arrow{color:var(--warm)}
+.gemeente-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:2px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:8px;background:var(--warm-p);color:var(--warm)}
+.badge-soon{background:var(--bg3);color:var(--ink3)}
+
+.cta-section{background:var(--bg2);border-top:0.5px solid var(--bdr2);border-bottom:0.5px solid var(--bdr2)}
+.cta-in{max-width:960px;margin:0 auto;padding:4rem 2.5rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem}
+.cta-box{padding:2.5rem;background:var(--bg);border:0.5px solid var(--bdr2);border-radius:6px}
+.cta-box.featured{background:var(--warm);border-color:transparent}
+.cta-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;margin-bottom:1rem}
+.cta-box .cta-label{color:var(--warm)}.cta-box.featured .cta-label{color:rgba(255,255,255,0.6)}
+.cta-title{font-family:var(--serif);font-size:26px;font-weight:300;line-height:1.2;margin-bottom:0.75rem}
+.cta-box .cta-title{color:var(--ink)}.cta-box.featured .cta-title{color:white}
+.cta-text{font-size:13px;line-height:1.75;font-weight:300;margin-bottom:1.75rem}
+.cta-box .cta-text{color:var(--ink3)}.cta-box.featured .cta-text{color:rgba(255,255,255,0.7)}
+.btn-dark{background:var(--ink);color:white;display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:3px;font-size:12px;font-weight:500;text-decoration:none;font-family:var(--sans);letter-spacing:0.05em;text-transform:uppercase;transition:background 0.18s}
+.btn-dark:hover{background:var(--ink2)}
+.btn-light{background:white;color:var(--warm);display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:3px;font-size:12px;font-weight:500;text-decoration:none;font-family:var(--sans);letter-spacing:0.05em;text-transform:uppercase;transition:opacity 0.18s}
+.btn-light:hover{opacity:0.9}
+
+footer{max-width:960px;margin:0 auto;padding:2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;border-top:0.5px solid var(--bdr2)}
+.f-brand{display:flex;align-items:center;gap:10px}
+.f-logo{width:24px;height:24px;border-radius:50%;object-fit:cover;opacity:0.5}
+.f-name{font-family:var(--serif);font-size:14px;font-weight:300;color:var(--ink3)}
+.f-links{display:flex;gap:1.75rem}
+.f-lnk{font-size:12px;color:var(--ink3);text-decoration:none;font-weight:300}
+.f-lnk:hover{color:var(--ink)}
+
+@media(max-width:700px){
+  nav{padding:0 1.25rem}
+  .nav-r .nav-a{display:none}
+  .hero-in{grid-template-columns:1fr;gap:3rem;padding:3.5rem 1.25rem 3rem}
+  .section{padding:3rem 1.25rem}
+  .cta-in{grid-template-columns:1fr;padding:2.5rem 1.25rem}
+  footer{padding:1.5rem 1.25rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="brand">
+    <img class="logo-img" src="https://raadslens-creator.github.io/raadslens/logo-raadslens.png" alt="Raadslens logo">
+    <span class="brand-name">Raadslens</span>
+  </a>
+  <div class="nav-r">
+    <a href="#gemeenten" class="nav-a">Gemeenten</a>
+    <a href="#meedoen" class="nav-a">Meedoen</a>
+    <a href="mailto:raadslens@gmail.com" class="nav-a">Contact</a>
+    <a href="https://tally.so/r/PLACEHOLDER_GEMEENTE" class="nav-btn" target="_blank" rel="noopener">Aanmelden</a>
+  </div>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="hero-accent"></div>
+  <div class="hero-in">
+    <div>
+      <p class="eyebrow">Lokale democratie</p>
+      <h1>De raad in<br>je <em>oren</em></h1>
+      <p class="hero-sub">Raadslens zet elke gemeenteraadsvergadering automatisch om naar een podcast. Gratis, onafhankelijk, beschikbaar de ochtend erna.</p>
+      <div class="btns">
+        <a href="#gemeenten" class="btn btn-primary">Bekijk gemeenten</a>
+        <a href="#meedoen" class="btn btn-ghost">Jouw gemeente toevoegen</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="pijler">
+        <div class="pijler-num">01</div>
+        <div class="pijler-title">Toegankelijk</div>
+        <div class="pijler-text">Lokale politiek voor iedereen — niet alleen voor mensen met drie uur vrije tijd.</div>
+      </div>
+      <div class="pijler">
+        <div class="pijler-num">02</div>
+        <div class="pijler-title">Transparant</div>
+        <div class="pijler-text">Wie zei wat, welke toezeggingen werden gedaan, hoe kwamen besluiten tot stand?</div>
+      </div>
+      <div class="pijler">
+        <div class="pijler-num">03</div>
+        <div class="pijler-title">Verantwoording</div>
+        <div class="pijler-text">Van verkiezingsbelofte tot raadsbesluit — alles inzichtelijk.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="gemeenten" aria-label="Actieve gemeenten">
+  <div class="section-head">
+    <h2 class="section-title">Actieve gemeenten</h2>
+    <p class="section-sub">Klik op een gemeente om de vergaderingen te beluisteren</p>
+  </div>
+  <div class="gemeenten-grid">
+    <a href="https://texel.raadslens.nl" class="gemeente-card" aria-label="Raadslens Texel">
+      <img class="gemeente-logo" src="https://raadslens-creator.github.io/raadslens/logo-texel.png" alt="Gemeente Texel" loading="lazy">
+      <div class="gemeente-naam">Texel</div>
+      <div class="gemeente-meta">Noord-Holland · 15 raadsleden</div>
+      <div class="gemeente-badge">Actief</div>
+      <span class="gemeente-arrow" aria-hidden="true">→</span>
+    </a>
+    <a href="https://hollandskroon.raadslens.nl" class="gemeente-card" aria-label="Raadslens Hollands Kroon">
+      <img class="gemeente-logo" src="https://raadslens-creator.github.io/raadslens/logo-hollandskroon.png" alt="Gemeente Hollands Kroon" loading="lazy">
+      <div class="gemeente-naam">Hollands Kroon</div>
+      <div class="gemeente-meta">Noord-Holland · 29 raadsleden</div>
+      <div class="gemeente-badge">Actief</div>
+      <span class="gemeente-arrow" aria-hidden="true">→</span>
+    </a>
+    <a href="https://rotterdam.raadslens.nl" class="gemeente-card" aria-label="Raadslens Rotterdam">
+      <img class="gemeente-logo" src="https://raadslens-creator.github.io/raadslens/logo-rotterdam.png" alt="Gemeente Rotterdam" loading="lazy">
+      <div class="gemeente-naam">Rotterdam</div>
+      <div class="gemeente-meta">Zuid-Holland · 45 raadsleden</div>
+      <div class="gemeente-badge badge-soon">Binnenkort</div>
+      <span class="gemeente-arrow" aria-hidden="true">→</span>
+    </a>
+    <a href="https://zaanstad.raadslens.nl" class="gemeente-card" aria-label="Raadslens Zaanstad">
+      <img class="gemeente-logo" src="https://raadslens-creator.github.io/raadslens/logo-zaanstad.png" alt="Gemeente Zaanstad" loading="lazy">
+      <div class="gemeente-naam">Zaanstad</div>
+      <div class="gemeente-meta">Noord-Holland · 39 raadsleden</div>
+      <div class="gemeente-badge badge-soon">Binnenkort</div>
+      <span class="gemeente-arrow" aria-hidden="true">→</span>
+    </a>
+    <a href="https://hilversum.raadslens.nl" class="gemeente-card" aria-label="Raadslens Hilversum">
+      <img class="gemeente-logo" src="https://raadslens-creator.github.io/raadslens/logo-hilversum.png" alt="Gemeente Hilversum" loading="lazy">
+      <div class="gemeente-naam">Hilversum</div>
+      <div class="gemeente-meta">Noord-Holland · 35 raadsleden</div>
+      <div class="gemeente-badge badge-soon">Binnenkort</div>
+      <span class="gemeente-arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<section class="cta-section" id="meedoen" aria-label="Meedoen">
+  <div class="cta-in">
+    <div class="cta-box featured">
+      <div class="cta-label">Voor inwoners</div>
+      <h2 class="cta-title">Mis jij jouw gemeente?</h2>
+      <p class="cta-text">Staat jouw gemeente er nog niet bij? Laat het ons weten — elke aanvraag helpt ons prioriteren welke gemeente we als volgende toevoegen.</p>
+      <a href="https://tally.so/r/PLACEHOLDER_INWONER" class="btn-light" target="_blank" rel="noopener">Gemeente aanvragen →</a>
+    </div>
+    <div class="cta-box">
+      <div class="cta-label">Voor gemeenten</div>
+      <h2 class="cta-title">Breng jouw gemeente live</h2>
+      <p class="cta-text">Is jouw gemeente actief op iBabs en wil je vergaderingen beschikbaar maken als podcast? We hebben je gemeente binnen een dag live.</p>
+      <a href="https://tally.so/r/PLACEHOLDER_GEMEENTE" class="btn-dark" target="_blank" rel="noopener">Aanmelden →</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="f-brand">
+    <img class="f-logo" src="https://raadslens-creator.github.io/raadslens/logo-raadslens.png" alt="Raadslens">
+    <span class="f-name">Raadslens — 2026</span>
+  </div>
+  <div class="f-links">
+    <a href="mailto:raadslens@gmail.com" class="f-lnk">raadslens@gmail.com</a>
+    <a href="https://github.com/raadslens-creator/raadslens" class="f-lnk" rel="noopener">Open source</a>
+  </div>
+</footer>
+
+</body>
+</html>
