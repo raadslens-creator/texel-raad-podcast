@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Dynamisch ingevuld via JS -->
+<title>Raadslens — Lokale democratie in je oren</title>
+<meta name="description" content="Beluister alle raadsvergaderingen als podcast. Gratis en onafhankelijk.">
+<meta name="author" content="Raadslens">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Raadslens — Lokale democratie in je oren">
+<meta property="og:description" content="Beluister alle raadsvergaderingen als podcast.">
+<meta property="og:image" content="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:site_name" content="Raadslens">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Raadslens — Lokale democratie in je oren">
+<meta name="twitter:description" content="Gemeenteraadsvergaderingen als podcast.">
+<meta name="twitter:image" content="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+
+<link rel="icon" type="image/png" href="https://raadslens-creator.github.io/raadslens/logo-raadslens.png">
+
+<!-- Podcast structured data — dynamisch ingevuld -->
+<script type="application/ld+json" id="ldJson">
+{
+  "@context": "https://schema.org",
+  "@type": "PodcastSeries",
+  "name": "Raadslens",
+  "description": "Gemeenteraadsvergaderingen als podcast.",
+  "url": "https://raadslens.nl",
+  "image": "https://raadslens-creator.github.io/raadslens/logo-raadslens.png",
+  "inLanguage": "nl",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Raadslens",
+    "url": "https://raadslens.nl"
+  }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#2c1a0e;--ink2:#5a3e2b;--ink3:#9a7e6a;
+  --bg:#faf7f2;--bg2:#f2ede4;--bg3:#e8e0d4;
+  --warm:#7a3b10;--warm2:#9a5020;--warm-p:#f8f0e8;
+  --bdr:rgba(44,26,14,0.09);--bdr2:rgba(44,26,14,0.15);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.65}
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:62px;border-bottom:0.5px solid var(--bdr2);background:var(--bg)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:0.5px solid var(--bdr2)}
+.brand-txt{display:flex;flex-direction:column;line-height:1.1}
+.brand-name{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--ink);letter-spacing:0.03em}
+.brand-gem{font-size:10px;color:var(--warm);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.nav-r{display:flex;gap:2rem;align-items:center}
+.nav-a{font-size:13px;color:var(--ink3);text-decoration:none;font-weight:300;transition:color 0.2s}
+.nav-a:hover{color:var(--ink)}
+.nav-home{font-size:12px;color:var(--warm);text-decoration:none;font-weight:400}
+
+.hero{background:var(--bg2);border-bottom:0.5px solid var(--bdr2);position:relative;overflow:hidden}
+.hero-accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--warm)}
+.hero-in{max-width:900px;margin:0 auto;padding:4.5rem 2.5rem 4rem;display:grid;grid-template-columns:1fr auto;gap:4rem;align-items:center}
+.eyebrow{font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm);font-weight:500;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:'';display:block;width:20px;height:1px;background:var(--warm)}
+.hero h1{font-family:var(--serif);font-size:clamp(34px,5vw,54px);font-weight:300;line-height:1.1;color:var(--ink);margin-bottom:1.25rem;letter-spacing:-0.01em}
+.hero h1 em{font-style:italic;color:var(--warm)}
+.hero-sub{font-size:14px;color:var(--ink2);line-height:1.85;font-weight:300;margin-bottom:2.5rem;max-width:420px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:3px;font-size:12px;font-weight:500;text-decoration:none;cursor:pointer;font-family:var(--sans);letter-spacing:0.05em;text-transform:uppercase;border:none;transition:all 0.18s}
+.btn-primary{background:var(--warm);color:white}.btn-primary:hover{background:var(--warm2)}
+.btn-ghost{background:transparent;color:var(--ink2);border:0.5px solid var(--bdr2)}.btn-ghost:hover{background:var(--bg3)}
+.stats{display:flex;flex-direction:column;gap:2rem;padding-left:4rem;border-left:0.5px solid var(--bdr2)}
+.snum{font-family:var(--serif);font-size:48px;font-weight:300;color:var(--ink);line-height:1}
+.slbl{font-size:11px;color:var(--ink3);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px}
+
+main{max-width:900px;margin:0 auto;padding:0 2.5rem 6rem}
+.eph{display:flex;justify-content:space-between;align-items:center;padding:2.5rem 0 1.75rem;border-bottom:0.5px solid var(--bdr2)}
+.eph-t{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink3)}
+.eps{list-style:none}
+.ep{border-top:0.5px solid var(--bdr)}
+.ep-row{display:grid;grid-template-columns:60px 1fr auto;gap:1.5rem;align-items:start;padding:1.75rem 0;cursor:pointer}
+.ep-n{font-family:var(--serif);font-size:30px;font-weight:300;color:var(--bg3);line-height:1;padding-top:7px;transition:color 0.2s;user-select:none}
+.ep:hover .ep-n{color:var(--warm-p)}
+.ep-d{font-size:11px;color:var(--ink3);letter-spacing:0.07em;text-transform:uppercase;margin-bottom:5px}
+.ep-t{font-family:var(--serif);font-size:20px;font-weight:400;line-height:1.3;color:var(--ink);margin-bottom:8px;transition:color 0.2s}
+.ep:hover .ep-t{color:var(--warm)}
+.ep-m{display:flex;gap:10px;align-items:center}
+.ep-dur{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--bg3)}
+.ep-tag{font-size:11px;color:var(--ink3)}
+.pbtn{width:42px;height:42px;border-radius:50%;background:var(--warm);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.18s,background 0.18s;margin-top:6px}
+.pbtn:hover{background:var(--warm2);transform:scale(1.08)}
+.pi{width:0;height:0;border-style:solid;border-width:6px 0 6px 12px;border-color:transparent transparent transparent white;margin-left:3px}
+.pau{display:none;width:11px;height:11px;border-left:3px solid white;border-right:3px solid white}
+.playing .pi{display:none}.playing .pau{display:block}
+.pl{display:none;padding:0 0 1.75rem 75px}.pl.open{display:block}
+.pl-in{background:var(--ink);border-radius:4px;padding:16px 18px}
+.pl-lbl{font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:10px;letter-spacing:0.06em;text-transform:uppercase}
+.pl-ctrl{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pl-t{font-size:11px;color:rgba(255,255,255,0.3);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:96px}
+.pl-bar{flex:1;height:2px;background:rgba(255,255,255,0.1);border-radius:1px;cursor:pointer}
+.pl-fill{height:100%;background:var(--warm2);border-radius:1px;width:0%;transition:width 0.5s linear}
+.pl-lnks{display:flex;gap:8px}
+.pl-lnk{font-size:11px;color:rgba(255,255,255,0.3);text-decoration:none;padding:3px 8px;border:0.5px solid rgba(255,255,255,0.1);border-radius:2px;letter-spacing:0.05em;text-transform:uppercase;transition:color 0.15s}
+.pl-lnk:hover{color:rgba(255,255,255,0.75)}
+.loading{padding:4rem 0;text-align:center;color:var(--ink3);font-size:14px;font-weight:300}
+footer{border-top:0.5px solid var(--bdr2);max-width:900px;margin:0 auto;padding:1.75rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.f-brand{display:flex;align-items:center;gap:10px}
+.f-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;opacity:0.5}
+.f-name{font-family:var(--serif);font-size:13px;font-weight:300;color:var(--ink3)}
+.f-lnk{font-size:12px;color:var(--ink3);text-decoration:none;font-weight:300}
+@media(max-width:660px){
+  nav{padding:0 1.25rem}
+  .hero-in{grid-template-columns:1fr;gap:2.5rem;padding:3rem 1.25rem 2.5rem}
+  .stats{border-left:none;border-top:0.5px solid var(--bdr2);padding-left:0;padding-top:1.5rem;flex-direction:row;gap:2.5rem}
+  main{padding:0 1.25rem 4rem}
+  .ep-row{grid-template-columns:1fr auto;gap:1rem}
+  .ep-n{display:none}
+  .pl{padding-left:0}
+  .nav-r .nav-a{display:none}
+  footer{padding:1.25rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">
+    <img class="logo-img" id="navLogo" src="https://raadslens-creator.github.io/raadslens/logo-raadslens.png" alt="Raadslens logo">
+    <div class="brand-txt">
+      <span class="brand-name">Raadslens</span>
+      <span class="brand-gem" id="navGem">Laden...</span>
+    </div>
+  </div>
+  <div class="nav-r">
+    <a href="#verg" class="nav-a">Vergaderingen</a>
+    <a href="mailto:raadslens@gmail.com" class="nav-a">Contact</a>
+    <a href="https://raadslens.nl" class="nav-home">← Alle gemeenten</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-accent"></div>
+  <div class="hero-in">
+    <div>
+      <p class="eyebrow" id="eyebrow">Gemeente</p>
+      <h1>Lokale democratie<br>in je <em>oren</em></h1>
+      <p class="hero-sub">Elke raadsvergadering automatisch als podcast. Beschikbaar de ochtend erna — luister wanneer het jou uitkomt.</p>
+      <div class="btns">
+        <a href="#" class="btn btn-primary" id="bSp" style="display:none" rel="noopener">Spotify</a>
+        <a href="#" class="btn btn-ghost" id="bAp" style="display:none" rel="noopener">Apple Podcasts</a>
+        <a href="#" class="btn btn-ghost" id="bRs">RSS-feed</a>
+      </div>
+    </div>
+    <div class="stats" aria-label="Statistieken">
+      <div><div class="snum" id="sEp">—</div><div class="slbl">Afleveringen</div></div>
+      <div><div class="snum" id="sTm">—</div><div class="slbl">Luistertijd</div></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="eph" id="verg"><span class="eph-t">Vergaderingen</span></div>
+  <ul class="eps" id="eL" aria-label="Lijst van vergaderingen">
+    <li class="loading">Vergaderingen laden...</li>
+  </ul>
+</main>
+
+<footer>
+  <div class="f-brand">
+    <img class="f-logo" src="https://raadslens-creator.github.io/raadslens/logo-raadslens.png" alt="Raadslens">
+    <span class="f-name">Raadslens — 2026</span>
+  </div>
+  <a href="mailto:raadslens@gmail.com" class="f-lnk">raadslens@gmail.com</a>
+</footer>
+
+<script>
+const BASE = 'https://raadslens-creator.github.io/raadslens';
+const SPOTIFY = { texel: 'https://open.spotify.com/show/75KYMfeH4lu6tdoWP0Kvij' };
+
+function getGemeente() {
+  const parts = window.location.hostname.split('.');
+  if (parts.length >= 3 && parts[0] !== 'www') return parts[0];
+  return new URLSearchParams(window.location.search).get('gemeente') || 'texel';
+}
+
+const GEMEENTE = getGemeente();
+const fT = s => { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=Math.floor(s%60); return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`:`${m}:${String(sc).padStart(2,'0')}`; };
+const pT = s => { const p=s.split(':').map(Number); return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1]; };
+let cur=null,cb=null,ci=null,globalEps=[];
+
+function parseFeed(xml) {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  const items = [...doc.querySelectorAll('item')];
+  const feedTitle = doc.querySelector('channel > title')?.textContent || '';
+  const feedImg = doc.querySelector('channel image url')?.textContent || `${BASE}/logo-${GEMEENTE}.png`;
+  return { feedTitle, feedImg, eps: items.map((item, i) => ({
+    n: String(items.length - i).padStart(2, '0'),
+    d: (() => { const d = new Date(item.querySelector('pubDate')?.textContent||''); return isNaN(d)?'':d.toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric'}); })(),
+    t: item.querySelector('title')?.textContent || '',
+    dur: item.querySelector('duration')?.textContent || '',
+    au: item.querySelector('enclosure')?.getAttribute('url') || '',
+    ib: item.querySelector('link')?.textContent || '',
+  }))};
+}
+
+function totalTime(eps) {
+  let t=0; eps.forEach(e=>{try{t+=pT(e.dur);}catch(err){}});
+  const h=Math.floor(t/3600),m=Math.floor((t%3600)/60);
+  return h>0?`${h}u ${m}m`:`${m}m`;
+}
+
+function updateMeta(feedTitle, feedImg, eps) {
+  const naam = feedTitle.replace('Raadslens ','');
+  const title = `${feedTitle} — Raadslens`;
+  const desc = `Beluister alle raadsvergaderingen van ${naam} als podcast. ${eps.length} afleveringen beschikbaar.`;
+
+  document.title = title;
+  document.querySelector('meta[name="description"]').content = desc;
+  document.querySelector('meta[property="og:title"]').content = title;
+  document.querySelector('meta[property="og:description"]').content = desc;
+  document.querySelector('meta[property="og:image"]').content = feedImg;
+  document.querySelector('meta[property="og:url"]').content = window.location.href;
+  document.querySelector('meta[name="twitter:title"]').content = title;
+  document.querySelector('meta[name="twitter:description"]').content = desc;
+  document.querySelector('meta[name="twitter:image"]').content = feedImg;
+
+  // Canonical
+  let can = document.querySelector('link[rel="canonical"]');
+  if (!can) { can = document.createElement('link'); can.rel='canonical'; document.head.appendChild(can); }
+  can.href = window.location.origin;
+
+  // Podcast RSS link
+  let rssLink = document.querySelector('link[type="application/rss+xml"]');
+  if (!rssLink) { rssLink = document.createElement('link'); rssLink.rel='alternate'; rssLink.type='application/rss+xml'; document.head.appendChild(rssLink); }
+  rssLink.href = `${BASE}/${GEMEENTE}/feed.xml`;
+  rssLink.title = feedTitle;
+
+  // JSON-LD
+  document.getElementById('ldJson').textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "PodcastSeries",
+    "name": feedTitle,
+    "description": desc,
+    "url": window.location.origin,
+    "image": feedImg,
+    "inLanguage": "nl",
+    "publisher": { "@type": "Organization", "name": "Raadslens", "url": "https://raadslens.nl" },
+    "webFeed": `${BASE}/${GEMEENTE}/feed.xml`
+  });
+}
+
+async function init() {
+  const logoUrl = `${BASE}/logo-${GEMEENTE}.png`;
+  const navLogo = document.getElementById('navLogo');
+  navLogo.src = logoUrl;
+  navLogo.onerror = () => navLogo.src = `${BASE}/logo-raadslens.png`;
+
+  const gemNaam = GEMEENTE.charAt(0).toUpperCase() + GEMEENTE.slice(1).replace('hollandskroon','Hollands Kroon').replace('rotterdam','Rotterdam').replace('zaanstad','Zaanstad').replace('hilversum','Hilversum').replace('texel','Texel');
+  document.getElementById('navGem').textContent = gemNaam;
+  document.getElementById('eyebrow').textContent = `Gemeente ${gemNaam}`;
+
+  const rssUrl = `${BASE}/${GEMEENTE}/feed.xml`;
+  document.getElementById('bRs').href = rssUrl;
+  if (SPOTIFY[GEMEENTE]) {
+    const bSp = document.getElementById('bSp');
+    bSp.href = SPOTIFY[GEMEENTE]; bSp.style.display = 'inline-flex';
+  }
+
+  try {
+    const res = await fetch(rssUrl);
+    if (!res.ok) throw new Error();
+    const { feedTitle, feedImg, eps } = parseFeed(await res.text());
+    globalEps = eps;
+    if (feedTitle) {
+      document.getElementById('navGem').textContent = feedTitle.replace('Raadslens ','');
+      document.getElementById('eyebrow').textContent = feedTitle.replace('Raadslens ','Gemeente ');
+    }
+    updateMeta(feedTitle || `Raadslens ${gemNaam}`, feedImg, eps);
+    document.getElementById('sEp').textContent = eps.length || '—';
+    document.getElementById('sTm').textContent = eps.length ? totalTime(eps) : '—';
+    render(eps);
+  } catch(e) {
+    document.getElementById('eL').innerHTML = '<li class="loading">Vergaderingen worden binnenkort toegevoegd.</li>';
+    document.getElementById('sEp').textContent = '0';
+    updateMeta(`Raadslens ${gemNaam}`, logoUrl, []);
+  }
+}
+
+function render(eps) {
+  const L = document.getElementById('eL');
+  if (!eps.length) { L.innerHTML = '<li class="loading">Vergaderingen worden binnenkort toegevoegd.</li>'; return; }
+  L.innerHTML = eps.map((e,i) => `
+    <li class="ep" itemscope itemtype="https://schema.org/PodcastEpisode">
+      <meta itemprop="name" content="${e.t}">
+      <meta itemprop="datePublished" content="${e.d}">
+      <div class="ep-row" onclick="tog(${i})">
+        <div class="ep-n" aria-hidden="true">${e.n}</div>
+        <div>
+          <p class="ep-d"><time>${e.d}</time></p>
+          <h2 class="ep-t">${e.t}</h2>
+          <div class="ep-m">
+            <span class="ep-dur">${e.dur}</span>
+            ${e.tag?`<span class="dot" aria-hidden="true"></span><span class="ep-tag">${e.tag}</span>`:''}
+          </div>
+        </div>
+        <button class="pbtn" id="b${i}" aria-label="Speel af: ${e.t}"><span class="pi" aria-hidden="true"></span><span class="pau" aria-hidden="true"></span></button>
+      </div>
+      <div class="pl" id="p${i}" role="region" aria-label="Audio player">
+        <div class="pl-in">
+          <div class="pl-lbl">Nu speelt</div>
+          <div class="pl-ctrl">
+            <span class="pl-t" id="tt${i}">0:00 / ${e.dur}</span>
+            <div class="pl-bar" onclick="sk(event,${i})" role="progressbar" aria-label="Afspeelpositie"><div class="pl-fill" id="ff${i}"></div></div>
+          </div>
+          <div class="pl-lnks">
+            ${e.ib?`<a href="${e.ib}" class="pl-lnk" target="_blank" rel="noopener">iBabs</a>`:''}
+            ${e.au?`<a href="${e.au}" class="pl-lnk" download>Download</a>`:''}
+          </div>
+        </div>
+      </div>
+    </li>`).join('');
+}
+
+function tog(i) {
+  const e = globalEps[i];
+  if (!e) return;
+  const pl=document.getElementById('p'+i), btn=document.getElementById('b'+i);
+  if (cur&&ci===i) { cur.paused?(cur.play(),btn.classList.add('playing')):(cur.pause(),btn.classList.remove('playing')); return; }
+  if (cur) cur.pause();
+  if (cb) cb.classList.remove('playing');
+  document.querySelectorAll('.pl.open').forEach(p=>p.classList.remove('open'));
+  pl.classList.add('open'); ci=i; cb=btn;
+  cur = new Audio(e.au);
+  cur.addEventListener('timeupdate', () => {
+    const pct = cur.duration?(cur.currentTime/cur.duration*100):0;
+    document.getElementById('ff'+i).style.width = Math.round(pct)+'%';
+    document.getElementById('tt'+i).textContent = fT(Math.floor(cur.currentTime))+' / '+fT(Math.floor(cur.duration||pT(e.dur)));
+  });
+  cur.addEventListener('ended', () => btn.classList.remove('playing'));
+  cur.play(); btn.classList.add('playing');
+}
+
+function sk(ev, i) {
+  ev.stopPropagation();
+  if (!cur||ci!==i) return;
+  cur.currentTime = (ev.offsetX/ev.currentTarget.offsetWidth)*cur.duration;
+}
+
+init();
+</script>
+</body>
+</html>
