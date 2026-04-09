@@ -1567,7 +1567,7 @@ def main():
         maak_github_issue(date_id, date_str, twijfels, transcript_url)
 
     # Samenvattingen genereren via Claude API
-    genereer_samenvattingen(date_id, date_str, transcript, agenda_tekst)
+    genereer_samenvattingen(date_id, date_str, transcript, "")
 
     log("Klaar!")
 
